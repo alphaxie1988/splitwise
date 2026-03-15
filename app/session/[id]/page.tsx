@@ -30,7 +30,7 @@ export default function SessionPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/sessions/${id}`, { cache: 'no-store' })
+      const res = await fetch(`/api/sessions/${id}?t=${Date.now()}`, { cache: 'no-store' })
       if (!res.ok) throw new Error((await res.json()).error ?? 'Session not found')
       setData(await res.json())
     } catch (err: unknown) {
