@@ -38,6 +38,8 @@ export default function SessionPage() {
   const [savingName, setSavingName] = useState(false)
   const [settlingSession, setSettlingSession] = useState(false)
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null)
+  const [newMemberName, setNewMemberName] = useState('')
+  const [addingMember, setAddingMember] = useState(false)
 
   const supabase = createClient()
 
@@ -139,6 +141,18 @@ export default function SessionPage() {
     const res = await fetch(`/api/sessions/${id}/settle`, { method })
     setSettlingSession(false)
     if (res.ok) { fetchData(); setAuditKey(k => k + 1) }
+  }
+
+  const handleAddMember = async () => {
+    if (!newMemberName.trim()) return
+    setAddingMember(true)
+    const res = await fetch(`/api/sessions/${id}/members`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newMemberName }),
+    })
+    setAddingMember(false)
+    if (res.ok) { setNewMemberName(''); fetchData() }
   }
 
   const handleRemoveMember = async (memberId: string) => {
@@ -404,6 +418,20 @@ export default function SessionPage() {
                   </button>
                 </div>
               ))}
+              <div className="flex items-center gap-2 px-4 py-2.5">
+                <input
+                  type="text"
+                  value={newMemberName}
+                  onChange={e => setNewMemberName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleAddMember() }}
+                  placeholder="New member name…"
+                  className="flex-1 text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button onClick={handleAddMember} disabled={addingMember || !newMemberName.trim()}
+                  className="flex items-center gap-1 text-sm text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
+                  <Plus size={13} /> {addingMember ? '…' : 'Add'}
+                </button>
+              </div>
             </div>
           </div>
         )}
