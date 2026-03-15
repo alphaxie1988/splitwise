@@ -13,15 +13,18 @@ export async function GET(
     const supabase = createServiceClient()
     const { id } = params
 
-    const { data: session, error: sessionError } = await supabase
+    const { data: rawSession, error: sessionError } = await supabase
       .from('sessions')
       .select('*')
       .eq('id', id)
       .single()
 
-    if (sessionError || !session) {
+    if (sessionError || !rawSession) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
+
+    // Mask passcode — only expose whether one is set
+    const session = { ...rawSession, has_passcode: !!rawSession.passcode, passcode: undefined }
 
     const [{ data: members }, { data: currencies }, { data: rawExpenses }] = await Promise.all([
       supabase.from('session_members').select('*').eq('session_id', id).order('created_at'),
@@ -29,13 +32,17 @@ export async function GET(
       supabase.from('expenses').select('*').eq('session_id', id).order('created_at', { ascending: false }),
     ])
 
-    console.log('rawExpenses count:', rawExpenses?.length, rawExpenses?.map(e => ({ id: e.id, is_deleted: e.is_deleted })))
-
     const filteredExpenses = (rawExpenses ?? []).filter(e => e.is_deleted !== true)
     const expenseIds = filteredExpenses.map(e => e.id)
-    const { data: splits } = expenseIds.length > 0
-      ? await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
-      : { data: [] }
+
+    const [splitsResult, settlementsResult] = await Promise.all([
+      expenseIds.length > 0
+        ? supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
+        : Promise.resolve({ data: [] }),
+      supabase.from('settlements').select('*').eq('session_id', id),
+    ])
+    const splits = splitsResult.data
+    const confirmedSettlements = settlementsResult.data ?? []
 
     const membersMap = Object.fromEntries((members ?? []).map(m => [m.id, m]))
     const expenses = filteredExpenses.map(expense => ({
@@ -47,7 +54,7 @@ export async function GET(
     }))
 
     return NextResponse.json(
-      { session, members: members ?? [], currencies: currencies ?? [], expenses },
+      { session, members: members ?? [], currencies: currencies ?? [], expenses, confirmedSettlements },
       { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } }
     )
   } catch (err: unknown) {

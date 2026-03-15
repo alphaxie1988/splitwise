@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase-server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, members, currencies } = body
+    const { name, members, currencies, passcode } = body
 
     const validMembers: string[] = (members ?? []).filter((m: string) => m?.trim())
     if (validMembers.length < 2) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const { data: session, error: sessionError } = await supabase
       .from('sessions')
-      .insert({ name: name?.trim() || 'My Session' })
+      .insert({ name: name?.trim() || 'My Session', passcode: passcode?.trim() || null })
       .select()
       .single()
 

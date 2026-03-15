@@ -56,6 +56,10 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
       setTransferTo(other?.id ?? '')
     }
   }
+  const [notes, setNotes] = useState(expense?.notes ?? '')
+  const [expenseDate, setExpenseDate] = useState(
+    expense?.expense_date ?? new Date().toISOString().split('T')[0]
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -89,7 +93,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
     setLoading(true)
     const finalSplitIds = isTransfer ? [transferTo] : splitIds
     try {
-      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, category, paid_by_member_id: paidBy, split_member_ids: finalSplitIds }
+      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, category, notes: notes.trim() || null, expense_date: expenseDate, paid_by_member_id: paidBy, split_member_ids: finalSplitIds }
       const res = await fetch(expense ? `/api/expenses/${expense.id}` : '/api/expenses', {
         method: expense ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -177,6 +181,22 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
           {amountInSGD && currency !== 'SGD' && (
             <p className="text-xs text-gray-400">≈ {amountInSGD} SGD at session rate</p>
           )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes <span className="text-gray-400 font-normal text-xs">(optional)</span>
+            </label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder="e.g. receipt #1234, split 3 ways..."
+              rows={2}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Paid by</label>

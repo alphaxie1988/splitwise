@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { session_id, description, amount, currency_code, category, paid_by_member_id, split_member_ids } = body
+    const { session_id, description, amount, currency_code, category, notes, expense_date, paid_by_member_id, split_member_ids } = body
 
     if (!session_id || !description?.trim() || !amount || !paid_by_member_id || !split_member_ids?.length) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
@@ -28,6 +28,8 @@ export async function POST(request: NextRequest) {
         amount,
         currency_code: currency_code || 'SGD',
         category: category || 'misc',
+        notes: notes?.trim() || null,
+        expense_date: expense_date || new Date().toISOString().split('T')[0],
         paid_by_member_id,
         created_by_email: user.email,
       })

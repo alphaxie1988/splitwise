@@ -10,10 +10,13 @@ interface Props {
 }
 
 const ACTION_STYLES: Record<string, string> = {
-  CREATE:      'text-green-700 bg-green-50',
-  UPDATE:      'text-blue-700 bg-blue-50',
-  DELETE:      'text-red-700 bg-red-50',
-  RATE_CHANGE: 'text-orange-700 bg-orange-50',
+  CREATE:         'text-green-700 bg-green-50',
+  UPDATE:         'text-blue-700 bg-blue-50',
+  DELETE:         'text-red-700 bg-red-50',
+  RATE_CHANGE:    'text-orange-700 bg-orange-50',
+  SETTLE:         'text-green-700 bg-green-50',
+  UNSETTLE:       'text-yellow-700 bg-yellow-50',
+  SESSION_UPDATE: 'text-purple-700 bg-purple-50',
 }
 
 function formatDate(iso: string) {
@@ -42,6 +45,9 @@ function describeLog(log: AuditLog): string {
       const code = log.new_data?.currency_code ?? ''
       return `Changed ${code} rate: ${log.old_data?.rate_to_sgd} → ${log.new_data?.rate_to_sgd} SGD`
     }
+    case 'SETTLE': return 'Marked session as settled'
+    case 'UNSETTLE': return 'Reopened session'
+    case 'SESSION_UPDATE': return `Renamed session: "${log.old_data?.name}" → "${log.new_data?.name}"`
     default: return `Changed "${d}"`
   }
 }

@@ -18,7 +18,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { description, amount, currency_code, category, paid_by_member_id, split_member_ids } = body
+    const { description, amount, currency_code, category, notes, expense_date, paid_by_member_id, split_member_ids } = body
 
     const supabase = createServiceClient()
 
@@ -36,6 +36,8 @@ export async function PUT(
         amount,
         currency_code,
         category: category || 'misc',
+        notes: notes?.trim() || null,
+        expense_date: expense_date || new Date().toISOString().split('T')[0],
         paid_by_member_id,
         updated_at: new Date().toISOString(),
       })
