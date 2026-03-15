@@ -40,7 +40,7 @@ export default function SessionPage() {
       const json = await res.json()
       setData(json)
 
-      // Remember this session in localStorage
+      // Remember this session — in DB if logged in, localStorage as fallback
       const entry = {
         id,
         name: json.session.name,
@@ -50,6 +50,13 @@ export default function SessionPage() {
       const stored = JSON.parse(localStorage.getItem('recentSessions') ?? '[]')
       const updated = [entry, ...stored.filter((s: { id: string }) => s.id !== id)].slice(0, 20)
       localStorage.setItem('recentSessions', JSON.stringify(updated))
+
+      // Also persist to DB (will silently no-op if not logged in)
+      fetch('/api/user/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: id }),
+      }).catch(() => {})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load session.')
     } finally {
