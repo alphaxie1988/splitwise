@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2, ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
@@ -13,6 +14,7 @@ import AuditLogSection from '@/components/AuditLogSection'
 
 export default function SessionPage() {
   const { id } = useParams<{ id: string }>()
+  const router = useRouter()
   const [data, setData] = useState<SessionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -35,7 +37,19 @@ export default function SessionPage() {
     try {
       const res = await fetch(`/api/sessions/${id}?t=${Date.now()}`, { cache: 'no-store' })
       if (!res.ok) throw new Error((await res.json()).error ?? 'Session not found')
-      setData(await res.json())
+      const json = await res.json()
+      setData(json)
+
+      // Remember this session in localStorage
+      const entry = {
+        id,
+        name: json.session.name,
+        members: json.members.map((m: { name: string }) => m.name),
+        lastVisited: new Date().toISOString(),
+      }
+      const stored = JSON.parse(localStorage.getItem('recentSessions') ?? '[]')
+      const updated = [entry, ...stored.filter((s: { id: string }) => s.id !== id)].slice(0, 20)
+      localStorage.setItem('recentSessions', JSON.stringify(updated))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load session.')
     } finally {
@@ -131,6 +145,12 @@ export default function SessionPage() {
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-1 transition"
+              >
+                <ArrowLeft size={12} /> Home
+              </button>
               <h1 className="text-xl font-bold truncate">{session.name}</h1>
               <p className="text-sm text-gray-500 truncate">
                 {members.map(m => m.name).join(' · ')}
