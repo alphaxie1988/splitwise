@@ -47,10 +47,11 @@ export default function AuditLogSection({ sessionId }: Props) {
   const [loading, setLoading] = useState(false)
 
   const handleToggle = async () => {
-    setExpanded(prev => !prev)
-    if (!loaded) {
+    const opening = !expanded
+    setExpanded(opening)
+    if (opening) {
       setLoading(true)
-      const res = await fetch(`/api/sessions/${sessionId}/audit`)
+      const res = await fetch(`/api/sessions/${sessionId}/audit?t=${Date.now()}`, { cache: 'no-store' })
       const data = await res.json()
       setLogs(data.logs ?? [])
       setLoaded(true)

@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { unstable_noStore as noStore } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase-server'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  noStore()
   try {
     const supabase = createServiceClient()
 
@@ -17,7 +21,7 @@ export async function GET(
 
     if (error) throw error
 
-    return NextResponse.json({ logs: logs ?? [] })
+    return NextResponse.json({ logs: logs ?? [] }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
