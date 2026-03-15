@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import type { Expense, SessionMember, SessionCurrency } from '@/lib/types'
+import type { Expense, SessionMember, SessionCurrency, CategoryId } from '@/lib/types'
+import { CATEGORIES } from '@/lib/types'
 
 interface Props {
   sessionId: string
@@ -17,6 +18,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   const [description, setDescription] = useState(expense?.description ?? '')
   const [amount, setAmount] = useState(expense?.amount?.toString() ?? '')
   const [currency, setCurrency] = useState(expense?.currency_code ?? 'SGD')
+  const [category, setCategory] = useState<CategoryId>(expense?.category ?? 'misc')
   const [paidBy, setPaidBy] = useState(expense?.paid_by_member_id ?? members[0]?.id ?? '')
   const [splitIds, setSplitIds] = useState<string[]>(
     expense?.splits?.map(s => s.member_id) ?? members.map(m => m.id)
@@ -51,7 +53,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
 
     setLoading(true)
     try {
-      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, paid_by_member_id: paidBy, split_member_ids: splitIds }
+      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, category, paid_by_member_id: paidBy, split_member_ids: splitIds }
       const res = await fetch(expense ? `/api/expenses/${expense.id}` : '/api/expenses', {
         method: expense ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,6 +89,27 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
               placeholder="e.g. Dinner at Maxwell"
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <div className="grid grid-cols-5 gap-1.5">
+              {CATEGORIES.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategory(c.id)}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-xs transition ${
+                    category === c.id
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-500'
+                  }`}
+                >
+                  <span className="text-lg leading-none">{c.emoji}</span>
+                  <span className="truncate w-full text-center">{c.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-2">

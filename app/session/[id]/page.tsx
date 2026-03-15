@@ -6,6 +6,7 @@ import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2 } from 'lucide-re
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
+import { CATEGORIES } from '@/lib/types'
 import ExpenseModal from '@/components/ExpenseModal'
 import SettlementModal from '@/components/SettlementModal'
 import AuditLogSection from '@/components/AuditLogSection'
@@ -22,6 +23,7 @@ export default function SessionPage() {
   const [showSettlement, setShowSettlement] = useState(false)
   const [copied, setCopied] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [exitingId, setExitingId] = useState<string | null>(null)
   const [editingRateId, setEditingRateId] = useState<string | null>(null)
   const [rateInput, setRateInput] = useState('')
   const [savingRate, setSavingRate] = useState(false)
@@ -71,9 +73,12 @@ export default function SessionPage() {
   }
 
   const handleDeleteExpense = async (expenseId: string) => {
+    setExitingId(expenseId)
     setDeleteId(expenseId)
+    await new Promise(r => setTimeout(r, 250))
     const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
     setDeleteId(null)
+    setExitingId(null)
     if (res.ok) { fetchData(); setAuditKey(k => k + 1) }
   }
 
@@ -257,10 +262,15 @@ export default function SessionPage() {
             {expenses.map(expense => {
               const splitNames = expense.splits?.map(s => s.member?.name ?? '').filter(Boolean).join(', ')
               const amountSGD = expense.amount * rateFor(expense.currency_code)
+              const categoryEmoji = CATEGORIES.find(c => c.id === expense.category)?.emoji ?? '📦'
 
               return (
-                <div key={expense.id} className="bg-white border rounded-lg p-4">
+                <div
+                  key={expense.id}
+                  className={`bg-white border rounded-lg p-4 ${exitingId === expense.id ? 'expense-exit' : 'expense-enter'}`}
+                >
                   <div className="flex items-start gap-3">
+                    <div className="text-2xl leading-none pt-0.5 shrink-0">{categoryEmoji}</div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 truncate">{expense.description}</p>
                       <div className="flex items-baseline gap-2 mt-0.5">

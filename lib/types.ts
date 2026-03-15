@@ -25,6 +25,20 @@ export interface ExpenseSplit {
   member?: SessionMember
 }
 
+export const CATEGORIES = [
+  { id: 'meal',          label: 'Meal',          emoji: '🍽️' },
+  { id: 'drink',         label: 'Drink',         emoji: '🍹' },
+  { id: 'entertainment', label: 'Entertainment', emoji: '🎉' },
+  { id: 'hotel',         label: 'Hotel',         emoji: '🏨' },
+  { id: 'taxi',          label: 'Taxi',          emoji: '🚕' },
+  { id: 'flight',        label: 'Flight',        emoji: '✈️' },
+  { id: 'train',         label: 'Train',         emoji: '🚆' },
+  { id: 'shopping',      label: 'Shopping',      emoji: '🛍️' },
+  { id: 'misc',          label: 'Misc',          emoji: '📦' },
+] as const
+
+export type CategoryId = typeof CATEGORIES[number]['id']
+
 export interface Expense {
   id: string
   session_id: string
@@ -32,6 +46,7 @@ export interface Expense {
   amount: number
   currency_code: string
   paid_by_member_id: string
+  category: CategoryId
   created_at: string
   updated_at: string
   created_by_email: string | null
