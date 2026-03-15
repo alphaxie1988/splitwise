@@ -1,0 +1,165 @@
+'use client'
+
+import { useState } from 'react'
+import { X } from 'lucide-react'
+import type { Expense, SessionMember, SessionCurrency } from '@/lib/types'
+
+interface Props {
+  sessionId: string
+  members: SessionMember[]
+  currencies: SessionCurrency[]
+  expense: Expense | null
+  onClose: () => void
+  onSaved: () => void
+}
+
+export default function ExpenseModal({ sessionId, members, currencies, expense, onClose, onSaved }: Props) {
+  const [description, setDescription] = useState(expense?.description ?? '')
+  const [amount, setAmount] = useState(expense?.amount?.toString() ?? '')
+  const [currency, setCurrency] = useState(expense?.currency_code ?? 'SGD')
+  const [paidBy, setPaidBy] = useState(expense?.paid_by_member_id ?? members[0]?.id ?? '')
+  const [splitIds, setSplitIds] = useState<string[]>(
+    expense?.splits?.map(s => s.member_id) ?? members.map(m => m.id)
+  )
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const allCurrencies = ['SGD', ...currencies.map(c => c.currency_code)]
+
+  const toggleSplit = (id: string) =>
+    setSplitIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+
+  const rateForCurrency = (code: string) => {
+    if (code === 'SGD') return 1
+    return currencies.find(c => c.currency_code === code)?.rate_to_sgd ?? 1
+  }
+
+  const amountInSGD =
+    amount && !isNaN(parseFloat(amount))
+      ? (parseFloat(amount) * rateForCurrency(currency)).toFixed(2)
+      : null
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    const amt = parseFloat(amount)
+    if (!description.trim()) { setError('Please enter a description.'); return }
+    if (isNaN(amt) || amt <= 0) { setError('Amount must be a positive number.'); return }
+    if (!paidBy) { setError('Please select who paid.'); return }
+    if (splitIds.length === 0) { setError('Please select at least one person to split with.'); return }
+
+    setLoading(true)
+    try {
+      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, paid_by_member_id: paidBy, split_member_ids: splitIds }
+      const res = await fetch(expense ? `/api/expenses/${expense.id}` : '/api/expenses', {
+        method: expense ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to save expense.')
+      onSaved()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="text-lg font-semibold">{expense ? 'Edit Expense' : 'Add Expense'}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="e.g. Dinner at Maxwell"
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+              <input
+                type="number"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder="0.00"
+                step="any"
+                min="0"
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="w-28">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <select
+                value={currency}
+                onChange={e => setCurrency(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {allCurrencies.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {amountInSGD && currency !== 'SGD' && (
+            <p className="text-xs text-gray-400">≈ {amountInSGD} SGD at session rate</p>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Paid by</label>
+            <select
+              value={paidBy}
+              onChange={e => setPaidBy(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Split among
+              <span className="text-gray-400 font-normal ml-1 text-xs">(equal split)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {members.map(m => (
+                <label key={m.id} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={splitIds.includes(m.id)}
+                    onChange={() => toggleSplit(m.id)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700 truncate">{m.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+          >
+            {loading ? 'Saving…' : expense ? 'Save Changes' : 'Add Expense'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,37 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+type SetAllCookies = Parameters<NonNullable<CookieMethodsServer['setAll']>>[0]
+
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/'
+
+  if (code) {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll() },
+          setAll(cookiesToSet: SetAllCookies) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`)
+    }
+  }
+
+  // On error, send back to homepage
+  return NextResponse.redirect(`${origin}/`)
+}
