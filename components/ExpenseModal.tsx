@@ -19,7 +19,11 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   const [amount, setAmount] = useState(expense?.amount?.toString() ?? '')
   const [currency, setCurrency] = useState(expense?.currency_code ?? 'SGD')
   const [category, setCategory] = useState<CategoryId>(expense?.category ?? 'misc')
-  const [paidBy, setPaidBy] = useState(expense?.paid_by_member_id ?? members[0]?.id ?? '')
+  const [paidBy, setPaidBy] = useState(() => {
+    if (expense?.paid_by_member_id) return expense.paid_by_member_id
+    const last = localStorage.getItem(`lastPaidBy_${sessionId}`)
+    return (last && members.find(m => m.id === last)) ? last : members[0]?.id ?? ''
+  })
   const [splitIds, setSplitIds] = useState<string[]>(
     expense?.splits?.map(s => s.member_id) ?? members.map(m => m.id)
   )
@@ -61,6 +65,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save expense.')
+      localStorage.setItem(`lastPaidBy_${sessionId}`, paidBy)
       onSaved()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
