@@ -24,16 +24,19 @@ export async function GET(
     const [{ data: members }, { data: currencies }, { data: rawExpenses }] = await Promise.all([
       supabase.from('session_members').select('*').eq('session_id', id).order('created_at'),
       supabase.from('session_currencies').select('*').eq('session_id', id).order('currency_code'),
-      supabase.from('expenses').select('*').eq('session_id', id).eq('is_deleted', false).order('created_at', { ascending: false }),
+      supabase.from('expenses').select('*').eq('session_id', id).order('created_at', { ascending: false }),
     ])
 
-    const expenseIds = (rawExpenses ?? []).map(e => e.id)
+    console.log('rawExpenses count:', rawExpenses?.length, rawExpenses?.map(e => ({ id: e.id, is_deleted: e.is_deleted })))
+
+    const filteredExpenses = (rawExpenses ?? []).filter(e => e.is_deleted !== true)
+    const expenseIds = filteredExpenses.map(e => e.id)
     const { data: splits } = expenseIds.length > 0
       ? await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
       : { data: [] }
 
     const membersMap = Object.fromEntries((members ?? []).map(m => [m.id, m]))
-    const expenses = (rawExpenses ?? []).map(expense => ({
+    const expenses = filteredExpenses.map(expense => ({
       ...expense,
       paid_by: membersMap[expense.paid_by_member_id] ?? null,
       splits: (splits ?? [])
