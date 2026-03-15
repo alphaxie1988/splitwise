@@ -25,6 +25,7 @@ export default function SessionPage() {
   const [editingRateId, setEditingRateId] = useState<string | null>(null)
   const [rateInput, setRateInput] = useState('')
   const [savingRate, setSavingRate] = useState(false)
+  const [auditKey, setAuditKey] = useState(0)
 
   const supabase = createClient()
 
@@ -73,7 +74,7 @@ export default function SessionPage() {
     setDeleteId(expenseId)
     const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
     setDeleteId(null)
-    if (res.ok) fetchData()
+    if (res.ok) { fetchData(); setAuditKey(k => k + 1) }
   }
 
   const handleSaveRate = async (currencyId: string) => {
@@ -93,7 +94,8 @@ export default function SessionPage() {
   // ── Loading / error states ───────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
         <p className="text-gray-400 text-sm">Loading session…</p>
       </div>
     )
@@ -310,7 +312,7 @@ export default function SessionPage() {
 
         {/* Audit log */}
         <div className="mt-8">
-          <AuditLogSection sessionId={id} />
+          <AuditLogSection sessionId={id} refreshKey={auditKey} />
         </div>
       </main>
 
@@ -322,7 +324,7 @@ export default function SessionPage() {
           currencies={currencies}
           expense={editingExpense}
           onClose={() => setShowExpenseModal(false)}
-          onSaved={() => { setShowExpenseModal(false); fetchData() }}
+          onSaved={() => { setShowExpenseModal(false); fetchData(); setAuditKey(k => k + 1) }}
         />
       )}
 

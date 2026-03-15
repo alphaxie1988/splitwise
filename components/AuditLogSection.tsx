@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { AuditLog } from '@/lib/types'
 
 interface Props {
   sessionId: string
+  refreshKey?: number
 }
 
 const ACTION_STYLES: Record<string, string> = {
@@ -40,24 +41,24 @@ function describeLog(log: AuditLog): string {
   }
 }
 
-export default function AuditLogSection({ sessionId }: Props) {
+export default function AuditLogSection({ sessionId, refreshKey }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [logs, setLogs] = useState<AuditLog[]>([])
-  const [loaded, setLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleToggle = async () => {
-    const opening = !expanded
-    setExpanded(opening)
-    if (opening) {
-      setLoading(true)
-      const res = await fetch(`/api/sessions/${sessionId}/audit?t=${Date.now()}`, { cache: 'no-store' })
-      const data = await res.json()
-      setLogs(data.logs ?? [])
-      setLoaded(true)
-      setLoading(false)
-    }
-  }
+  const fetchLogs = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/sessions/${sessionId}/audit?t=${Date.now()}`, { cache: 'no-store' })
+    const data = await res.json()
+    setLogs(data.logs ?? [])
+    setLoading(false)
+  }, [sessionId])
+
+  useEffect(() => {
+    if (expanded) fetchLogs()
+  }, [expanded, refreshKey, fetchLogs])
+
+  const handleToggle = () => setExpanded(prev => !prev)
 
   return (
     <div className="border rounded-lg bg-white overflow-hidden">
