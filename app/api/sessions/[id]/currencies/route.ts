@@ -18,6 +18,15 @@ export async function PUT(
     }
 
     const supabase = createServiceClient()
+
+    // Fetch old rate for audit
+    const { data: oldCurrency } = await supabase
+      .from('session_currencies')
+      .select('currency_code, rate_to_sgd')
+      .eq('id', currency_id)
+      .eq('session_id', params.id)
+      .single()
+
     const { error } = await supabase
       .from('session_currencies')
       .update({ rate_to_sgd: parseFloat(rate_to_sgd) })
@@ -25,6 +34,14 @@ export async function PUT(
       .eq('session_id', params.id)
 
     if (error) throw error
+
+    await supabase.from('audit_logs').insert({
+      session_id: params.id,
+      action: 'RATE_CHANGE',
+      changed_by_email: user.email,
+      old_data: { currency_code: oldCurrency?.currency_code, rate_to_sgd: oldCurrency?.rate_to_sgd },
+      new_data: { currency_code: oldCurrency?.currency_code, rate_to_sgd: parseFloat(rate_to_sgd) },
+    })
 
     return NextResponse.json({ ok: true })
   } catch (err: unknown) {

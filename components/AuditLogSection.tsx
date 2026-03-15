@@ -10,9 +10,10 @@ interface Props {
 }
 
 const ACTION_STYLES: Record<string, string> = {
-  CREATE: 'text-green-700 bg-green-50',
-  UPDATE: 'text-blue-700 bg-blue-50',
-  DELETE: 'text-red-700 bg-red-50',
+  CREATE:      'text-green-700 bg-green-50',
+  UPDATE:      'text-blue-700 bg-blue-50',
+  DELETE:      'text-red-700 bg-red-50',
+  RATE_CHANGE: 'text-orange-700 bg-orange-50',
 }
 
 function formatDate(iso: string) {
@@ -37,6 +38,10 @@ function describeLog(log: AuditLog): string {
       return `Updated "${d}"${changes.length ? ` (${changes.join(', ')})` : ''}`
     }
     case 'DELETE': return `Deleted "${d}"`
+    case 'RATE_CHANGE': {
+      const code = log.new_data?.currency_code ?? ''
+      return `Changed ${code} rate: ${log.old_data?.rate_to_sgd} → ${log.new_data?.rate_to_sgd} SGD`
+    }
     default: return `Changed "${d}"`
   }
 }

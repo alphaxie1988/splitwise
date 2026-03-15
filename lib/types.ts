@@ -34,6 +34,7 @@ export const CATEGORIES = [
   { id: 'flight',        label: 'Flight',        emoji: '✈️' },
   { id: 'train',         label: 'Train',         emoji: '🚆' },
   { id: 'shopping',      label: 'Shopping',      emoji: '🛍️' },
+  { id: 'transfer',      label: 'Transfer',      emoji: '💸' },
   { id: 'misc',          label: 'Misc',          emoji: '📦' },
 ] as const
 
