@@ -22,12 +22,15 @@ export default function SessionPage() {
   const [showSettlement, setShowSettlement] = useState(false)
   const [copied, setCopied] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [editingRateId, setEditingRateId] = useState<string | null>(null)
+  const [rateInput, setRateInput] = useState('')
+  const [savingRate, setSavingRate] = useState(false)
 
   const supabase = createClient()
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/sessions/${id}`)
+      const res = await fetch(`/api/sessions/${id}`, { cache: 'no-store' })
       if (!res.ok) throw new Error((await res.json()).error ?? 'Session not found')
       setData(await res.json())
     } catch (err: unknown) {
@@ -71,6 +74,17 @@ export default function SessionPage() {
     const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
     setDeleteId(null)
     if (res.ok) fetchData()
+  }
+
+  const handleSaveRate = async (currencyId: string) => {
+    setSavingRate(true)
+    const res = await fetch(`/api/sessions/${id}/currencies`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currency_id: currencyId, rate_to_sgd: rateInput }),
+    })
+    setSavingRate(false)
+    if (res.ok) { setEditingRateId(null); fetchData() }
   }
 
   const openAdd = () => { setEditingExpense(null); setShowExpenseModal(true) }
@@ -149,8 +163,43 @@ export default function SessionPage() {
           {currencies.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {currencies.map(c => (
-                <span key={c.id} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
-                  1 {c.currency_code} = {c.rate_to_sgd} SGD
+                <span key={c.id} className="flex items-center gap-1 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                  1 {c.currency_code} =&nbsp;
+                  {editingRateId === c.id ? (
+                    <>
+                      <input
+                        autoFocus
+                        type="number"
+                        step="any"
+                        min="0.000001"
+                        value={rateInput}
+                        onChange={e => setRateInput(e.target.value)}
+                        className="w-16 border rounded px-1 py-0 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        onKeyDown={e => { if (e.key === 'Enter') handleSaveRate(c.id); if (e.key === 'Escape') setEditingRateId(null) }}
+                      />
+                      <button
+                        onClick={() => handleSaveRate(c.id)}
+                        disabled={savingRate}
+                        className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50"
+                      >
+                        {savingRate ? '…' : 'Save'}
+                      </button>
+                      <button onClick={() => setEditingRateId(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+                    </>
+                  ) : (
+                    <>
+                      {c.rate_to_sgd} SGD
+                      {user && (
+                        <button
+                          onClick={() => { setEditingRateId(c.id); setRateInput(c.rate_to_sgd.toString()) }}
+                          className="ml-1 text-gray-400 hover:text-blue-500"
+                          title="Edit rate"
+                        >
+                          <Pencil size={10} />
+                        </button>
+                      )}
+                    </>
+                  )}
                 </span>
               ))}
             </div>
