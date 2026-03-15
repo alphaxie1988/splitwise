@@ -337,7 +337,7 @@ export default function SessionPage() {
           </div>
         </div>
 
-        {/* Expense list */}
+        {/* Expense list grouped by day */}
         {expenses.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-base">No expenses yet.</p>
@@ -347,60 +347,87 @@ export default function SessionPage() {
               </button>
             )}
           </div>
-        ) : (
-          <div className="space-y-2">
-            {expenses.map(expense => {
-              const splitNames = expense.splits?.map(s => s.member?.name ?? '').filter(Boolean).join(', ')
-              const amountSGD = expense.amount * rateFor(expense.currency_code)
-              const categoryEmoji = CATEGORIES.find(c => c.id === expense.category)?.emoji ?? '📦'
+        ) : (() => {
+          // Group by expense_date, sort days descending
+          const groups: Record<string, typeof expenses> = {}
+          for (const e of expenses) {
+            const day = e.expense_date ?? e.created_at.split('T')[0]
+            if (!groups[day]) groups[day] = []
+            groups[day].push(e)
+          }
+          const sortedDays = Object.keys(groups).sort((a, b) => b.localeCompare(a))
 
-              return (
-                <div key={expense.id}
-                  className={`bg-white border rounded-lg p-4 ${exitingId === expense.id ? 'expense-exit' : 'expense-enter'}`}>
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl leading-none pt-0.5 shrink-0">{categoryEmoji}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{expense.description}</p>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-sm font-semibold text-gray-800">
-                          {expense.amount.toFixed(2)} {expense.currency_code}
-                        </span>
-                        {expense.currency_code !== 'SGD' && (
-                          <span className="text-xs text-gray-400">≈ {amountSGD.toFixed(2)} SGD</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Paid by <span className="font-medium">{expense.paid_by?.name}</span>
-                        {splitNames && <> &middot; Split: {splitNames}</>}
-                      </p>
-                      {expense.notes && (
-                        <p className="text-xs text-gray-400 mt-0.5 italic">"{expense.notes}"</p>
-                      )}
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {expense.expense_date
-                          ? new Date(expense.expense_date + 'T00:00:00').toLocaleDateString()
-                          : new Date(expense.created_at).toLocaleDateString()}
-                      </p>
+          function formatDay(dateStr: string) {
+            const d = new Date(dateStr + 'T00:00:00')
+            const today = new Date(); today.setHours(0,0,0,0)
+            const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
+            if (d.getTime() === today.getTime()) return 'Today'
+            if (d.getTime() === yesterday.getTime()) return 'Yesterday'
+            return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+          }
+
+          return (
+            <div className="space-y-6">
+              {sortedDays.map(day => {
+                const dayTotal = groups[day].reduce((sum, e) => sum + e.amount * rateFor(e.currency_code), 0)
+                return (
+                  <div key={day}>
+                    {/* Day header */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{formatDay(day)}</span>
+                      <span className="text-xs text-gray-400 tabular-nums">{dayTotal.toFixed(2)} SGD</span>
                     </div>
-
-                    {user && !session.is_settled && (
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button onClick={() => openEdit(expense)}
-                          className="text-gray-400 hover:text-blue-600 p-1 rounded transition" title="Edit">
-                          <Pencil size={14} />
-                        </button>
-                        <button onClick={() => handleDeleteExpense(expense.id)} disabled={deleteId === expense.id}
-                          className="text-gray-400 hover:text-red-500 p-1 rounded transition disabled:opacity-40" title="Delete">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      {groups[day].map(expense => {
+                        const splitNames = expense.splits?.map(s => s.member?.name ?? '').filter(Boolean).join(', ')
+                        const amountSGD = expense.amount * rateFor(expense.currency_code)
+                        const categoryEmoji = CATEGORIES.find(c => c.id === expense.category)?.emoji ?? '📦'
+                        return (
+                          <div key={expense.id}
+                            className={`bg-white border rounded-lg p-4 ${exitingId === expense.id ? 'expense-exit' : 'expense-enter'}`}>
+                            <div className="flex items-start gap-3">
+                              <div className="text-2xl leading-none pt-0.5 shrink-0">{categoryEmoji}</div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-900 truncate">{expense.description}</p>
+                                <div className="flex items-baseline gap-2 mt-0.5">
+                                  <span className="text-sm font-semibold text-gray-800">
+                                    {expense.amount.toFixed(2)} {expense.currency_code}
+                                  </span>
+                                  {expense.currency_code !== 'SGD' && (
+                                    <span className="text-xs text-gray-400">≈ {amountSGD.toFixed(2)} SGD</span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Paid by <span className="font-medium">{expense.paid_by?.name}</span>
+                                  {splitNames && <> &middot; Split: {splitNames}</>}
+                                </p>
+                                {expense.notes && (
+                                  <p className="text-xs text-gray-400 mt-0.5 italic">"{expense.notes}"</p>
+                                )}
+                              </div>
+                              {user && !session.is_settled && (
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button onClick={() => openEdit(expense)}
+                                    className="text-gray-400 hover:text-blue-600 p-1 rounded transition" title="Edit">
+                                    <Pencil size={14} />
+                                  </button>
+                                  <button onClick={() => handleDeleteExpense(expense.id)} disabled={deleteId === expense.id}
+                                    className="text-gray-400 hover:text-red-500 p-1 rounded transition disabled:opacity-40" title="Delete">
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Member management (logged-in only) */}
         {user && (
