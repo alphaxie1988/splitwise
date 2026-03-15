@@ -21,7 +21,7 @@ export async function GET(
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    const [{ data: members }, { data: currencies }, { data: expenses }] = await Promise.all([
+    const [{ data: members }, { data: currencies }, { data: rawExpenses }, { data: splits }] = await Promise.all([
       supabase
         .from('session_members')
         .select('*')
@@ -34,15 +34,24 @@ export async function GET(
         .order('currency_code'),
       supabase
         .from('expenses')
-        .select(`
-          *,
-          paid_by:session_members!paid_by_member_id(*),
-          splits:expense_splits(*, member:session_members(*))
-        `)
+        .select('*')
         .eq('session_id', id)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false }),
+      supabase
+        .from('expense_splits')
+        .select('*')
+        .in('expense_id', (await supabase.from('expenses').select('id').eq('session_id', id).eq('is_deleted', false)).data?.map(e => e.id) ?? []),
     ])
+
+    const membersMap = Object.fromEntries((members ?? []).map(m => [m.id, m]))
+    const expenses = (rawExpenses ?? []).map(expense => ({
+      ...expense,
+      paid_by: membersMap[expense.paid_by_member_id] ?? null,
+      splits: (splits ?? [])
+        .filter(s => s.expense_id === expense.id)
+        .map(s => ({ ...s, member: membersMap[s.member_id] ?? null })),
+    }))
 
     return NextResponse.json({
       session,
