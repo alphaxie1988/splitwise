@@ -27,6 +27,35 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   const [splitIds, setSplitIds] = useState<string[]>(
     expense?.splits?.map(s => s.member_id) ?? members.map(m => m.id)
   )
+  const [transferTo, setTransferTo] = useState<string>(() => {
+    if (expense?.category === 'transfer') return expense.splits?.[0]?.member_id ?? ''
+    const initial = expense?.paid_by_member_id
+      ? members.find(m => m.id !== expense.paid_by_member_id)?.id ?? ''
+      : members.find(m => {
+          const last = localStorage.getItem(`lastPaidBy_${sessionId}`)
+          const payer = (last && members.find(x => x.id === last)) ? last : members[0]?.id
+          return m.id !== payer
+        })?.id ?? ''
+    return initial
+  })
+
+  const isTransfer = category === 'transfer'
+
+  const handleCategoryChange = (id: CategoryId) => {
+    setCategory(id)
+    if (id === 'transfer') {
+      const other = members.find(m => m.id !== paidBy)
+      setTransferTo(other?.id ?? '')
+    }
+  }
+
+  const handlePaidByChange = (id: string) => {
+    setPaidBy(id)
+    if (isTransfer && transferTo === id) {
+      const other = members.find(m => m.id !== id)
+      setTransferTo(other?.id ?? '')
+    }
+  }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -53,11 +82,14 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
     if (!description.trim()) { setError('Please enter a description.'); return }
     if (isNaN(amt) || amt <= 0) { setError('Amount must be a positive number.'); return }
     if (!paidBy) { setError('Please select who paid.'); return }
-    if (splitIds.length === 0) { setError('Please select at least one person to split with.'); return }
+    if (isTransfer && !transferTo) { setError('Please select who to transfer to.'); return }
+    if (isTransfer && transferTo === paidBy) { setError('Transfer from and to cannot be the same person.'); return }
+    if (!isTransfer && splitIds.length === 0) { setError('Please select at least one person to split with.'); return }
 
     setLoading(true)
+    const finalSplitIds = isTransfer ? [transferTo] : splitIds
     try {
-      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, category, paid_by_member_id: paidBy, split_member_ids: splitIds }
+      const payload = { session_id: sessionId, description: description.trim(), amount: amt, currency_code: currency, category, paid_by_member_id: paidBy, split_member_ids: finalSplitIds }
       const res = await fetch(expense ? `/api/expenses/${expense.id}` : '/api/expenses', {
         method: expense ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,7 +135,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => setCategory(c.id)}
+                  onClick={() => handleCategoryChange(c.id)}
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-xs transition ${
                     category === c.id
                       ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
@@ -150,32 +182,47 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
             <label className="block text-sm font-medium text-gray-700 mb-1">Paid by</label>
             <select
               value={paidBy}
-              onChange={e => setPaidBy(e.target.value)}
+              onChange={e => handlePaidByChange(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Split among
-              <span className="text-gray-400 font-normal ml-1 text-xs">(equal split)</span>
-            </label>
-            <div className="grid grid-cols-2 gap-1.5">
-              {members.map(m => (
-                <label key={m.id} className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={splitIds.includes(m.id)}
-                    onChange={() => toggleSplit(m.id)}
-                    className="rounded border-gray-300"
-                  />
-                  <span className="text-sm text-gray-700 truncate">{m.name}</span>
-                </label>
-              ))}
+          {isTransfer ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Transfer to</label>
+              <select
+                value={transferTo}
+                onChange={e => setTransferTo(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {members.filter(m => m.id !== paidBy).map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
             </div>
-          </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Split among
+                <span className="text-gray-400 font-normal ml-1 text-xs">(equal split)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {members.map(m => (
+                  <label key={m.id} className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={splitIds.includes(m.id)}
+                      onChange={() => toggleSplit(m.id)}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700 truncate">{m.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
