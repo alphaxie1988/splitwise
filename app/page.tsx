@@ -20,7 +20,7 @@ function getArchivedIds(): Set<string> {
 }
 
 function saveArchivedIds(ids: Set<string>) {
-  localStorage.setItem('archivedSessions', JSON.stringify([...ids]))
+  localStorage.setItem('archivedSessions', JSON.stringify(Array.from(ids)))
 }
 
 export default function Home() {
