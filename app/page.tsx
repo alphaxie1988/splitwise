@@ -130,7 +130,7 @@ export default function Home() {
           <button
             onClick={e => toggleArchive(e, s.id, archived)}
             title={archived ? 'Unarchive' : 'Archive'}
-            className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
           >
             {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
           </button>
