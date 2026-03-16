@@ -37,11 +37,13 @@ function calculateSettlement(
     const totalCents = Math.round(amountSGD * 100)
     const perPersonCents = Math.floor(totalCents / splits.length)
     const remainderCents = totalCents % splits.length
+    // Sort by member_id so remainder-cent assignment is deterministic regardless of DB query order
+    const sortedSplits = [...splits].sort((a, b) => a.member_id.localeCompare(b.member_id))
     balances[expense.paid_by_member_id] = (balances[expense.paid_by_member_id] ?? 0) + totalCents
     totalPaid[expense.paid_by_member_id] = (totalPaid[expense.paid_by_member_id] ?? 0) + totalCents
-    for (let i = 0; i < splits.length; i++) {
+    for (let i = 0; i < sortedSplits.length; i++) {
       const splitCents = perPersonCents + (i < remainderCents ? 1 : 0)
-      balances[splits[i].member_id] = (balances[splits[i].member_id] ?? 0) - splitCents
+      balances[sortedSplits[i].member_id] = (balances[sortedSplits[i].member_id] ?? 0) - splitCents
     }
   }
   // Convert cents back to dollars
