@@ -106,12 +106,22 @@ export default function SessionPage() {
     setExitingId(expenseId)
     setDeleteId(expenseId)
     await new Promise(r => setTimeout(r, 250))
-    const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
+    // Optimistically remove
+    const snapshot = data
+    setData(d => d ? { ...d, expenses: d.expenses.filter(e => e.id !== expenseId) } : d)
     setDeleteId(null); setExitingId(null)
-    if (res.ok) { fetchData(); setAuditKey(k => k + 1) }
+    const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
+    if (res.ok) { setAuditKey(k => k + 1) }
+    else { setData(snapshot) }
   }
 
   const handleSaveRate = async (currencyId: string) => {
+    const rate = parseFloat(rateInput)
+    if (isNaN(rate) || rate <= 0) return
+    // Optimistically update rate
+    const snapshot = data
+    setData(d => d ? { ...d, currencies: d.currencies.map(c => c.id === currencyId ? { ...c, rate_to_sgd: rate } : c) } : d)
+    setEditingRateId(null)
     setSavingRate(true)
     const res = await fetch(`/api/sessions/${id}/currencies`, {
       method: 'PUT',
@@ -119,50 +129,75 @@ export default function SessionPage() {
       body: JSON.stringify({ currency_id: currencyId, rate_to_sgd: rateInput }),
     })
     setSavingRate(false)
-    if (res.ok) { setEditingRateId(null); fetchData(); setAuditKey(k => k + 1) }
+    if (res.ok) { setAuditKey(k => k + 1) }
+    else { setData(snapshot); setEditingRateId(currencyId) }
   }
 
   const handleSaveName = async () => {
-    if (!nameInput.trim()) return
+    const newName = nameInput.trim()
+    if (!newName) return
+    // Optimistically update name
+    const snapshot = data
+    setData(d => d ? { ...d, session: { ...d.session, name: newName } } : d)
+    setEditingName(false)
     setSavingName(true)
     const res = await fetch(`/api/sessions/${id}/name`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: nameInput }),
+      body: JSON.stringify({ name: newName }),
     })
     setSavingName(false)
-    if (res.ok) { setEditingName(false); fetchData(); setAuditKey(k => k + 1) }
+    if (res.ok) { setAuditKey(k => k + 1) }
+    else { setData(snapshot); setEditingName(true) }
   }
 
   const handleToggleSettle = async () => {
     if (!data) return
+    const wasSettled = data.session.is_settled
+    // Optimistically toggle
+    setData(d => d ? { ...d, session: { ...d.session, is_settled: !wasSettled } } : d)
     setSettlingSession(true)
-    const method = data.session.is_settled ? 'DELETE' : 'POST'
-    const res = await fetch(`/api/sessions/${id}/settle`, { method })
+    const res = await fetch(`/api/sessions/${id}/settle`, { method: wasSettled ? 'DELETE' : 'POST' })
     setSettlingSession(false)
-    if (res.ok) { fetchData(); setAuditKey(k => k + 1) }
+    if (res.ok) { setAuditKey(k => k + 1) }
+    else { setData(d => d ? { ...d, session: { ...d.session, is_settled: wasSettled } } : d) }
   }
 
   const handleAddMember = async () => {
-    if (!newMemberName.trim()) return
+    const name = newMemberName.trim()
+    if (!name) return
+    // Optimistically add with a temp id
+    const tempId = `temp-${Date.now()}`
+    setData(d => d ? { ...d, members: [...d.members, { id: tempId, session_id: id, name, created_at: new Date().toISOString() }] } : d)
+    setNewMemberName('')
     setAddingMember(true)
     const res = await fetch(`/api/sessions/${id}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newMemberName }),
+      body: JSON.stringify({ name }),
     })
     setAddingMember(false)
-    if (res.ok) { setNewMemberName(''); fetchData() }
+    if (res.ok) {
+      const json = await res.json()
+      // Swap temp id for real id
+      setData(d => d ? { ...d, members: d.members.map(m => m.id === tempId ? json.member : m) } : d)
+    } else {
+      setData(d => d ? { ...d, members: d.members.filter(m => m.id !== tempId) } : d)
+      setNewMemberName(name)
+    }
   }
 
   const handleRemoveMember = async (memberId: string) => {
+    // Optimistically remove
+    const snapshot = data
+    setData(d => d ? { ...d, members: d.members.filter(m => m.id !== memberId) } : d)
     setRemovingMemberId(memberId)
     const res = await fetch(`/api/sessions/${id}/members/${memberId}`, { method: 'DELETE' })
     setRemovingMemberId(null)
-    if (res.ok) fetchData()
-    else {
-      const data = await res.json()
-      alert(data.error ?? 'Could not remove member.')
+    if (!res.ok) {
+      setData(snapshot)
+      const json = await res.json()
+      alert(json.error ?? 'Could not remove member.')
     }
   }
 
