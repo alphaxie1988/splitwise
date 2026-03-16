@@ -454,8 +454,11 @@ export default function SessionPage() {
                                   )}
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  Paid by <span className="font-medium">{expense.paid_by?.name}</span>
-                                  {splitNames && <> &middot; Split: {splitNames}</>}
+                                  {expense.category === 'transfer' ? (
+                                    <>Paid by <span className="font-medium">{expense.paid_by?.name}</span> → <span className="font-medium">{splitNames}</span></>
+                                  ) : (
+                                    <>Paid by <span className="font-medium">{expense.paid_by?.name}</span>{splitNames && <> &middot; Split: {splitNames}</>}</>
+                                  )}
                                 </p>
                                 {expense.notes && (
                                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 italic">"{expense.notes}"</p>
