@@ -13,13 +13,14 @@ interface RecentSession {
   name: string
   members: string[]
   lastVisited: string
+  isArchived?: boolean
 }
 
-function getArchivedIds(): Set<string> {
+// localStorage helpers for guest users
+function getGuestArchivedIds(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem('archivedSessions') ?? '[]')) } catch { return new Set() }
 }
-
-function saveArchivedIds(ids: Set<string>) {
+function saveGuestArchivedIds(ids: Set<string>) {
   localStorage.setItem('archivedSessions', JSON.stringify(Array.from(ids)))
 }
 
@@ -29,7 +30,7 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false)
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [sessionsLoading, setSessionsLoading] = useState(false)
-  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set())
+  const [guestArchivedIds, setGuestArchivedIds] = useState<Set<string>>(new Set())
   const [showArchived, setShowArchived] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -48,7 +49,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    setArchivedIds(getArchivedIds())
+    setGuestArchivedIds(getGuestArchivedIds())
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       loadSessions(!!user)
@@ -73,14 +74,24 @@ export default function Home() {
     await supabase.auth.signOut()
   }
 
-  const toggleArchive = (e: React.MouseEvent, id: string) => {
+  const toggleArchive = async (e: React.MouseEvent, id: string, currentlyArchived: boolean) => {
     e.stopPropagation()
-    setArchivedIds(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      saveArchivedIds(next)
-      return next
-    })
+    if (user) {
+      // Optimistic update
+      setRecentSessions(prev => prev.map(s => s.id === id ? { ...s, isArchived: !currentlyArchived } : s))
+      await fetch('/api/user/sessions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: id, is_archived: !currentlyArchived }),
+      })
+    } else {
+      setGuestArchivedIds(prev => {
+        const next = new Set(prev)
+        next.has(id) ? next.delete(id) : next.add(id)
+        saveGuestArchivedIds(next)
+        return next
+      })
+    }
   }
 
   function formatRelative(iso: string) {
@@ -94,34 +105,40 @@ export default function Home() {
     return `${days}d ago`
   }
 
-  const activeSessions = recentSessions.filter(s => !archivedIds.has(s.id))
-  const archivedSessions = recentSessions.filter(s => archivedIds.has(s.id))
+  const isArchived = (s: RecentSession) =>
+    user ? (s.isArchived ?? false) : guestArchivedIds.has(s.id)
 
-  const SessionCard = ({ s, archived }: { s: RecentSession; archived: boolean }) => (
-    <div
-      onClick={() => router.push(`/session/${s.id}`)}
-      className="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-between group cursor-pointer"
-    >
-      <div className="min-w-0 flex-1">
-        <p className={`font-medium truncate ${archived ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{s.name}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-          <Users size={10} />
-          <span className="truncate">{s.members.join(', ')}</span>
-        </p>
+  const activeSessions = recentSessions.filter(s => !isArchived(s))
+  const archivedSessions = recentSessions.filter(s => isArchived(s))
+
+  const SessionCard = ({ s }: { s: RecentSession }) => {
+    const archived = isArchived(s)
+    return (
+      <div
+        onClick={() => router.push(`/session/${s.id}`)}
+        className="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-between group cursor-pointer"
+      >
+        <div className="min-w-0 flex-1">
+          <p className={`font-medium truncate ${archived ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{s.name}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+            <Users size={10} />
+            <span className="truncate">{s.members.join(', ')}</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-3">
+          <span className="text-xs text-gray-400 dark:text-gray-500">{formatRelative(s.lastVisited)}</span>
+          <button
+            onClick={e => toggleArchive(e, s.id, archived)}
+            title={archived ? 'Unarchive' : 'Archive'}
+            className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition opacity-0 group-hover:opacity-100"
+          >
+            {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+          </button>
+          <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition" />
+        </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0 ml-3">
-        <span className="text-xs text-gray-400 dark:text-gray-500">{formatRelative(s.lastVisited)}</span>
-        <button
-          onClick={e => toggleArchive(e, s.id)}
-          title={archived ? 'Unarchive' : 'Archive'}
-          className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition opacity-0 group-hover:opacity-100"
-        >
-          {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
-        </button>
-        <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition" />
-      </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -187,7 +204,7 @@ export default function Home() {
             <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">No sessions yet. Create one above!</p>
           ) : (
             <div className="space-y-2">
-              {activeSessions.map(s => <SessionCard key={s.id} s={s} archived={false} />)}
+              {activeSessions.map(s => <SessionCard key={s.id} s={s} />)}
             </div>
           )}
         </div>
@@ -204,7 +221,7 @@ export default function Home() {
             </button>
             {showArchived && (
               <div className="space-y-2">
-                {archivedSessions.map(s => <SessionCard key={s.id} s={s} archived={true} />)}
+                {archivedSessions.map(s => <SessionCard key={s.id} s={s} />)}
               </div>
             )}
           </div>
