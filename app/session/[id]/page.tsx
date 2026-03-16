@@ -241,10 +241,21 @@ export default function SessionPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center dark:bg-gray-900">
-        <div className="text-center">
-          <p className="text-red-500 text-sm mb-2">{error || 'Session not found.'}</p>
-          <a href="/" className="text-blue-600 text-sm hover:underline">Go home</a>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm w-full">
+          <div className="flex justify-center mb-6">
+            <img src="/icon.svg" alt="Splitwise" className="w-16 h-16 rounded-2xl shadow-md opacity-40" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Session not found</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
+            {error && error !== 'Session not found.'
+              ? error
+              : "This session may have been deleted or the link is invalid."}
+          </p>
+          <a href="/"
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition">
+            <ArrowLeft size={14} /> Back to Home
+          </a>
         </div>
       </div>
     )
