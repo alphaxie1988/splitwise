@@ -14,6 +14,8 @@ interface Props {
   onSaved: () => void
 }
 
+const INPUT = 'w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+
 export default function ExpenseModal({ sessionId, members, currencies, expense, onClose, onSaved }: Props) {
   const [description, setDescription] = useState(expense?.description ?? '')
   const [amount, setAmount] = useState(expense?.amount?.toString() ?? '')
@@ -38,6 +40,20 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
         })?.id ?? ''
     return initial
   })
+  const [notes, setNotes] = useState(expense?.notes ?? '')
+  const [expenseDate, setExpenseDate] = useState(
+    expense?.expense_date ?? new Date().toISOString().split('T')[0]
+  )
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // #18 Recently used currencies
+  const [recentCurrencies] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('recentCurrencies') ?? '[]') } catch { return [] }
+  })
+
+  const allCurrencies = ['SGD', ...currencies.map(c => c.currency_code)]
+  const recentAvailable = recentCurrencies.filter(c => allCurrencies.includes(c) && c !== 'SGD')
 
   const isTransfer = category === 'transfer'
 
@@ -56,14 +72,6 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
       setTransferTo(other?.id ?? '')
     }
   }
-  const [notes, setNotes] = useState(expense?.notes ?? '')
-  const [expenseDate, setExpenseDate] = useState(
-    expense?.expense_date ?? new Date().toISOString().split('T')[0]
-  )
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const allCurrencies = ['SGD', ...currencies.map(c => c.currency_code)]
 
   const toggleSplit = (id: string) =>
     setSplitIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
@@ -81,7 +89,6 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
     const amt = parseFloat(amount)
     if (!description.trim()) { setError('Please enter a description.'); return }
     if (isNaN(amt) || amt <= 0) { setError('Amount must be a positive number.'); return }
@@ -102,6 +109,11 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save expense.')
       localStorage.setItem(`lastPaidBy_${sessionId}`, paidBy)
+      // Save recently used currency (#18)
+      if (currency !== 'SGD') {
+        const recent = [currency, ...recentCurrencies.filter(c => c !== currency)].slice(0, 3)
+        localStorage.setItem('recentCurrencies', JSON.stringify(recent))
+      }
       onSaved()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
@@ -112,40 +124,31 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">{expense ? 'Edit Expense' : 'Add Expense'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b dark:border-gray-700">
+          <h2 className="text-lg font-semibold dark:text-gray-100">{expense ? 'Edit Expense' : 'Add Expense'}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <input
-              type="text"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="e.g. Dinner at Maxwell"
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+              placeholder="e.g. Dinner at Maxwell" className={INPUT} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Category</label>
             <div className="grid grid-cols-5 gap-1.5">
               {CATEGORIES.map(c => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => handleCategoryChange(c.id)}
+                <button key={c.id} type="button" onClick={() => handleCategoryChange(c.id)}
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-xs transition ${
                     category === c.id
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-500'
-                  }`}
-                >
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-500 dark:text-gray-400'
+                  }`}>
                   <span className="text-lg leading-none">{c.emoji}</span>
                   <span className="truncate w-full text-center">{c.label}</span>
                 </button>
@@ -155,68 +158,62 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
 
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-              <input
-                type="number"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                placeholder="0.00"
-                step="any"
-                min="0"
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Amount</label>
+              <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
+                placeholder="0.00" step="any" min="0" className={INPUT} />
             </div>
             <div className="w-28">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-              <select
-                value={currency}
-                onChange={e => setCurrency(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Currency</label>
+              {/* #18 Recently used currency chips */}
+              {recentAvailable.length > 0 && (
+                <div className="flex gap-1 mb-1">
+                  {recentAvailable.map(c => (
+                    <button key={c} type="button" onClick={() => setCurrency(c)}
+                      className={`text-xs px-2 py-0.5 rounded-full border transition ${
+                        currency === c
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                          : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
+                      }`}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <select value={currency} onChange={e => setCurrency(e.target.value)} className={INPUT}>
                 {allCurrencies.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
 
           {amountInSGD && currency !== 'SGD' && (
-            <p className="text-xs text-gray-400">≈ {amountInSGD} SGD at session rate</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">≈ {amountInSGD} SGD at session rate</p>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Date</label>
+            <input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} className={INPUT} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Notes <span className="text-gray-400 font-normal text-xs">(optional)</span>
             </label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
-              placeholder="e.g. receipt #1234, split 3 ways..."
-              rows={2}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              placeholder="e.g. receipt #1234, split 3 ways..." rows={2}
+              className={`${INPUT} resize-none`} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Paid by</label>
-            <select
-              value={paidBy}
-              onChange={e => handlePaidByChange(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Paid by</label>
+            <select value={paidBy} onChange={e => handlePaidByChange(e.target.value)} className={INPUT}>
               {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
 
           {isTransfer ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Transfer to</label>
-              <select
-                value={transferTo}
-                onChange={e => setTransferTo(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Transfer to</label>
+              <select value={transferTo} onChange={e => setTransferTo(e.target.value)} className={INPUT}>
                 {members.filter(m => m.id !== paidBy).map(m => (
                   <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
@@ -224,20 +221,15 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Split among
-                <span className="text-gray-400 font-normal ml-1 text-xs">(equal split)</span>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Split among <span className="text-gray-400 font-normal ml-1 text-xs">(equal split)</span>
               </label>
               <div className="grid grid-cols-2 gap-1.5">
                 {members.map(m => (
                   <label key={m.id} className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={splitIds.includes(m.id)}
-                      onChange={() => toggleSplit(m.id)}
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm text-gray-700 truncate">{m.name}</span>
+                    <input type="checkbox" checked={splitIds.includes(m.id)} onChange={() => toggleSplit(m.id)}
+                      className="rounded border-gray-300 dark:border-gray-600" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{m.name}</span>
                   </label>
                 ))}
               </div>
@@ -246,11 +238,8 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition"
-          >
+          <button type="submit" disabled={loading}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition">
             {loading ? 'Saving…' : expense ? 'Save Changes' : 'Add Expense'}
           </button>
         </form>

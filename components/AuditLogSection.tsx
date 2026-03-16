@@ -10,20 +10,17 @@ interface Props {
 }
 
 const ACTION_STYLES: Record<string, string> = {
-  CREATE:         'text-green-700 bg-green-50',
-  UPDATE:         'text-blue-700 bg-blue-50',
-  DELETE:         'text-red-700 bg-red-50',
-  RATE_CHANGE:    'text-orange-700 bg-orange-50',
-  SETTLE:         'text-green-700 bg-green-50',
-  UNSETTLE:       'text-yellow-700 bg-yellow-50',
-  SESSION_UPDATE: 'text-purple-700 bg-purple-50',
+  CREATE:         'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30',
+  UPDATE:         'text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30',
+  DELETE:         'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30',
+  RATE_CHANGE:    'text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30',
+  SETTLE:         'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30',
+  UNSETTLE:       'text-yellow-700 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30',
+  SESSION_UPDATE: 'text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30',
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
 function describeLog(log: AuditLog): string {
@@ -69,40 +66,38 @@ export default function AuditLogSection({ sessionId, refreshKey }: Props) {
     if (expanded) fetchLogs()
   }, [expanded, refreshKey, fetchLogs])
 
-  const handleToggle = () => setExpanded(prev => !prev)
-
   return (
-    <div className="border rounded-lg bg-white overflow-hidden">
+    <div className="border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
       <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+        onClick={() => setExpanded(prev => !prev)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
       >
         <span>Audit Log</span>
         {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
       </button>
 
       {expanded && (
-        <div className="border-t">
+        <div className="border-t dark:border-gray-700">
           {loading ? (
             <p className="text-center text-gray-400 text-sm py-6">Loading…</p>
           ) : logs.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-6">No activity yet.</p>
           ) : (
-            <div className="divide-y max-h-72 overflow-y-auto">
+            <div className="divide-y dark:divide-gray-700 max-h-72 overflow-y-auto">
               {logs.map(log => (
                 <div key={log.id} className="px-4 py-3">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${ACTION_STYLES[log.action] ?? 'text-gray-600 bg-gray-50'}`}>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${ACTION_STYLES[log.action] ?? 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-700'}`}>
                       {log.action}
                     </span>
-                    <span className="text-xs text-gray-500 truncate max-w-[180px]">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
                       {log.changed_by_email ?? 'unknown'}
                     </span>
-                    <span className="text-xs text-gray-400 ml-auto shrink-0">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto shrink-0">
                       {formatDate(log.created_at)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{describeLog(log)}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{describeLog(log)}</p>
                 </div>
               ))}
             </div>

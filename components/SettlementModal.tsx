@@ -100,7 +100,6 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
     }
   }
 
-  // Per-person summary
   const totalExpensesSGD = expenses.reduce((sum, e) => {
     const rate = e.currency_code === 'SGD' ? 1 : currencies.find(c => c.currency_code === e.currency_code)?.rate_to_sgd ?? 1
     return sum + e.amount * rate
@@ -108,20 +107,20 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-5 border-b shrink-0">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-5 border-b dark:border-gray-700 shrink-0">
           <div>
-            <h2 className="text-lg font-semibold">Settle Up</h2>
+            <h2 className="text-lg font-semibold dark:text-gray-100">Settle Up</h2>
             <p className="text-xs text-gray-400 mt-0.5">All amounts in SGD</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={18} /></button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b shrink-0">
+        <div className="flex border-b dark:border-gray-700 shrink-0">
           {(['settle', 'summary'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 text-sm font-medium transition ${tab === t ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`flex-1 py-2.5 text-sm font-medium transition ${tab === t ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
               {t === 'settle' ? 'Who Pays Who' : 'Per Person Summary'}
             </button>
           ))}
@@ -132,13 +131,13 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
             <>
               {/* Net balances */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Net Balances</h3>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Net Balances</h3>
                 <div className="space-y-1.5">
                   {members.map(m => {
                     const bal = balances[m.id] ?? 0
                     return (
                       <div key={m.id} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-700">{m.name}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{m.name}</span>
                         <span className={`text-sm font-medium tabular-nums ${bal > 0.005 ? 'text-green-600' : bal < -0.005 ? 'text-red-500' : 'text-gray-400'}`}>
                           {bal > 0.005 ? '+' : ''}{bal.toFixed(2)} SGD
                         </span>
@@ -150,17 +149,17 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
 
               {/* Who pays who */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Payments</h3>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Payments</h3>
                 {settlements.length > 0 ? (
                   <div className="space-y-2">
                     {settlements.map((s, i) => {
                       const confirmed = isConfirmed(s)
                       const key = `${s.from.id}-${s.to.id}`
                       return (
-                        <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
-                          <span className={`text-sm font-medium ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.from.name}</span>
+                        <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50'}`}>
+                          <span className={`text-sm font-medium dark:text-gray-300 ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.from.name}</span>
                           <span className="text-gray-400 text-sm">→</span>
-                          <span className={`text-sm font-medium ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.to.name}</span>
+                          <span className={`text-sm font-medium dark:text-gray-300 ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.to.name}</span>
                           <span className={`ml-auto text-sm font-semibold tabular-nums ${confirmed ? 'text-gray-400' : 'text-blue-600'}`}>
                             {s.amount.toFixed(2)} SGD
                           </span>
@@ -188,7 +187,7 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
 
           {tab === 'summary' && (
             <div className="space-y-3">
-              <p className="text-xs text-gray-400">Total trip spend: <span className="font-medium text-gray-700">{totalExpensesSGD.toFixed(2)} SGD</span></p>
+              <p className="text-xs text-gray-400">Total trip spend: <span className="font-medium text-gray-700 dark:text-gray-200">{totalExpensesSGD.toFixed(2)} SGD</span></p>
               {members.map(m => {
                 const paid = expenses.reduce((sum, e) => {
                   if (e.paid_by_member_id !== m.id) return sum
@@ -203,16 +202,16 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                 }, 0)
                 const bal = balances[m.id] ?? 0
                 return (
-                  <div key={m.id} className="bg-gray-50 rounded-lg p-3">
+                  <div key={m.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-gray-800">{m.name}</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-100">{m.name}</span>
                       <span className={`text-sm font-semibold ${bal > 0.005 ? 'text-green-600' : bal < -0.005 ? 'text-red-500' : 'text-gray-400'}`}>
                         {bal > 0.005 ? 'gets back' : bal < -0.005 ? 'owes' : 'settled'} {Math.abs(bal) > 0.005 ? `${Math.abs(bal).toFixed(2)} SGD` : ''}
                       </span>
                     </div>
-                    <div className="flex gap-4 text-xs text-gray-500">
-                      <span>Paid: <span className="font-medium text-gray-700">{paid.toFixed(2)}</span></span>
-                      <span>Share: <span className="font-medium text-gray-700">{share.toFixed(2)}</span></span>
+                    <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+                      <span>Paid: <span className="font-medium text-gray-700 dark:text-gray-200">{paid.toFixed(2)}</span></span>
+                      <span>Share: <span className="font-medium text-gray-700 dark:text-gray-200">{share.toFixed(2)}</span></span>
                     </div>
                   </div>
                 )
@@ -223,7 +222,7 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
 
         <div className="px-5 pb-5 shrink-0">
           <button onClick={onClose}
-            className="w-full border rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50 transition">
+            className="w-full border dark:border-gray-600 rounded-lg py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
             Close
           </button>
         </div>

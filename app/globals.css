@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;

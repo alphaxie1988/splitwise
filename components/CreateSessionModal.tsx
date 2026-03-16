@@ -8,6 +8,8 @@ interface Props {
   onCreated: (id: string) => void
 }
 
+const INPUT = 'w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+
 export default function CreateSessionModal({ onClose, onCreated }: Props) {
   const [name, setName] = useState('')
   const [members, setMembers] = useState(['', ''])
@@ -49,17 +51,14 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
     const validMembers = members.map(m => m.trim()).filter(Boolean)
     if (validMembers.length < 2) { setError('Please add at least 2 members.'); return }
-
     const validCurrencies = currencies.filter(c => c.code.trim() && c.rate.trim())
     for (const c of validCurrencies) {
       if (isNaN(parseFloat(c.rate)) || parseFloat(c.rate) <= 0) {
         setError(`Exchange rate for ${c.code} must be a positive number.`); return
       }
     }
-
     setLoading(true)
     try {
       const res = await fetch('/api/sessions', {
@@ -69,10 +68,7 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
           name: name.trim() || 'My Session',
           members: validMembers,
           passcode: passcode.trim() || null,
-          currencies: validCurrencies.map(c => ({
-            code: c.code.trim().toUpperCase(),
-            rate: parseFloat(c.rate),
-          })),
+          currencies: validCurrencies.map(c => ({ code: c.code.trim().toUpperCase(), rate: parseFloat(c.rate) })),
         }),
       })
       const data = await res.json()
@@ -87,30 +83,26 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Create New Session</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b dark:border-gray-700">
+          <h2 className="text-lg font-semibold dark:text-gray-100">Create New Session</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={18} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          {/* Session name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Session Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Session Name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder="e.g. Bangkok Trip"
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              placeholder="e.g. Bangkok Trip" className={INPUT} />
           </div>
 
-          {/* Members */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Members</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Members</label>
             <div className="space-y-2">
               {members.map((m, i) => (
                 <div key={i} className="flex gap-2 items-center">
                   <input type="text" value={m} onChange={e => updateMember(i, e.target.value)}
-                    placeholder={`Member ${i + 1}`}
-                    className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    placeholder={`Member ${i + 1}`} className={INPUT} />
                   {members.length > 2 && (
                     <button type="button" onClick={() => removeMember(i)} className="text-red-400 hover:text-red-600 shrink-0">
                       <Trash2 size={15} />
@@ -120,31 +112,27 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
               ))}
             </div>
             <button type="button" onClick={addMember}
-              className="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+              className="mt-2 text-sm text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 flex items-center gap-1">
               <Plus size={14} /> Add member
             </button>
           </div>
 
-          {/* Foreign currencies */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Foreign Currencies
-              <span className="text-gray-400 font-normal ml-1 text-xs">(SGD is always included)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Foreign Currencies <span className="text-gray-400 font-normal ml-1 text-xs">(SGD is always included)</span>
             </label>
             <div className="space-y-2">
               {currencies.map((c, i) => (
                 <div key={i} className="flex gap-2 items-center">
                   <input type="text" value={c.code} onChange={e => updateCurrency(i, 'code', e.target.value)}
                     placeholder="USD" maxLength={5}
-                    className="w-16 border rounded-lg px-2 py-2 text-sm uppercase text-center focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    className="w-16 border dark:border-gray-600 rounded-lg px-2 py-2 text-sm uppercase text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   <span className="text-gray-400 text-xs shrink-0">1 =</span>
                   <input type="number" value={c.rate} onChange={e => updateCurrency(i, 'rate', e.target.value)}
-                    placeholder="1.35" step="any" min="0.000001"
-                    className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    placeholder="1.35" step="any" min="0.000001" className={INPUT} />
                   <span className="text-gray-400 text-xs shrink-0">SGD</span>
                   <button type="button" onClick={() => fetchLiveRate(i)} disabled={fetchingRate === i || !c.code.trim()}
-                    title="Fetch live rate"
-                    className="text-blue-400 hover:text-blue-600 disabled:opacity-40 shrink-0">
+                    title="Fetch live rate" className="text-blue-400 hover:text-blue-600 disabled:opacity-40 shrink-0">
                     <RefreshCw size={14} className={fetchingRate === i ? 'animate-spin' : ''} />
                   </button>
                   <button type="button" onClick={() => removeCurrency(i)} className="text-red-400 hover:text-red-600 shrink-0">
@@ -154,20 +142,17 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
               ))}
             </div>
             <button type="button" onClick={addCurrency}
-              className="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+              className="mt-2 text-sm text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 flex items-center gap-1">
               <Plus size={14} /> Add currency
             </button>
           </div>
 
-          {/* Optional passcode */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-              <Lock size={13} /> Passcode
-              <span className="text-gray-400 font-normal ml-1 text-xs">(optional)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1">
+              <Lock size={13} /> Passcode <span className="text-gray-400 font-normal ml-1 text-xs">(optional)</span>
             </label>
             <input type="text" value={passcode} onChange={e => setPasscode(e.target.value)}
-              placeholder="e.g. 1234"
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              placeholder="e.g. 1234" className={INPUT} />
             <p className="text-xs text-gray-400 mt-1">If set, visitors must enter this to view the session.</p>
           </div>
 

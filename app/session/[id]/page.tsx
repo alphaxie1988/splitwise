@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, QrCode, Users, RotateCcw } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
@@ -12,6 +12,9 @@ import SettlementModal from '@/components/SettlementModal'
 import AuditLogSection from '@/components/AuditLogSection'
 import PasscodeModal from '@/components/PasscodeModal'
 import QRModal from '@/components/QRModal'
+import SessionSkeleton from '@/components/SessionSkeleton'
+import UndoToast from '@/components/UndoToast'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default function SessionPage() {
   const { id } = useParams<{ id: string }>()
@@ -41,6 +44,10 @@ export default function SessionPage() {
   const [newMemberName, setNewMemberName] = useState('')
   const [addingMember, setAddingMember] = useState(false)
 
+  // Undo delete state
+  const [pendingDelete, setPendingDelete] = useState<{ expense: Expense; index: number } | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const supabase = createClient()
 
   const fetchData = useCallback(async () => {
@@ -50,14 +57,12 @@ export default function SessionPage() {
       const json = await res.json()
       setData(json)
 
-      // Check passcode
       if (json.session.has_passcode && !localStorage.getItem(`unlockedSession_${id}`)) {
         setLocked(true)
         setLoading(false)
         return
       }
 
-      // Remember session
       const entry = {
         id, name: json.session.name,
         members: json.members.map((m: { name: string }) => m.name),
@@ -106,19 +111,48 @@ export default function SessionPage() {
     setExitingId(expenseId)
     setDeleteId(expenseId)
     await new Promise(r => setTimeout(r, 250))
+
+    // Snapshot the expense and its position before removing
+    const idx = (data?.expenses ?? []).findIndex(e => e.id === expenseId)
+    const expense = data?.expenses[idx]
+    if (!expense) { setDeleteId(null); setExitingId(null); return }
+
     // Optimistically remove
-    const snapshot = data
     setData(d => d ? { ...d, expenses: d.expenses.filter(e => e.id !== expenseId) } : d)
     setDeleteId(null); setExitingId(null)
-    const res = await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
-    if (res.ok) { setAuditKey(k => k + 1) }
-    else { setData(snapshot) }
+
+    // Cancel any previous pending delete
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    // Commit the previous one if it exists before showing new toast
+    if (pendingDelete) {
+      await fetch(`/api/expenses/${pendingDelete.expense.id}`, { method: 'DELETE' })
+    }
+
+    // Show undo toast, schedule actual delete after 5s
+    setPendingDelete({ expense, index: idx })
+    undoTimerRef.current = setTimeout(async () => {
+      setPendingDelete(null)
+      await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
+      setAuditKey(k => k + 1)
+    }, 5000)
+  }
+
+  const handleUndoDelete = () => {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    if (pendingDelete) {
+      setData(d => {
+        if (!d) return d
+        const expenses = [...d.expenses]
+        expenses.splice(pendingDelete.index, 0, pendingDelete.expense)
+        return { ...d, expenses }
+      })
+      setPendingDelete(null)
+    }
   }
 
   const handleSaveRate = async (currencyId: string) => {
     const rate = parseFloat(rateInput)
     if (isNaN(rate) || rate <= 0) return
-    // Optimistically update rate
     const snapshot = data
     setData(d => d ? { ...d, currencies: d.currencies.map(c => c.id === currencyId ? { ...c, rate_to_sgd: rate } : c) } : d)
     setEditingRateId(null)
@@ -136,7 +170,6 @@ export default function SessionPage() {
   const handleSaveName = async () => {
     const newName = nameInput.trim()
     if (!newName) return
-    // Optimistically update name
     const snapshot = data
     setData(d => d ? { ...d, session: { ...d.session, name: newName } } : d)
     setEditingName(false)
@@ -154,7 +187,6 @@ export default function SessionPage() {
   const handleToggleSettle = async () => {
     if (!data) return
     const wasSettled = data.session.is_settled
-    // Optimistically toggle
     setData(d => d ? { ...d, session: { ...d.session, is_settled: !wasSettled } } : d)
     setSettlingSession(true)
     const res = await fetch(`/api/sessions/${id}/settle`, { method: wasSettled ? 'DELETE' : 'POST' })
@@ -166,7 +198,6 @@ export default function SessionPage() {
   const handleAddMember = async () => {
     const name = newMemberName.trim()
     if (!name) return
-    // Optimistically add with a temp id
     const tempId = `temp-${Date.now()}`
     setData(d => d ? { ...d, members: [...d.members, { id: tempId, session_id: id, name, created_at: new Date().toISOString() }] } : d)
     setNewMemberName('')
@@ -179,7 +210,6 @@ export default function SessionPage() {
     setAddingMember(false)
     if (res.ok) {
       const json = await res.json()
-      // Swap temp id for real id
       setData(d => d ? { ...d, members: d.members.map(m => m.id === tempId ? json.member : m) } : d)
     } else {
       setData(d => d ? { ...d, members: d.members.filter(m => m.id !== tempId) } : d)
@@ -188,7 +218,6 @@ export default function SessionPage() {
   }
 
   const handleRemoveMember = async (memberId: string) => {
-    // Optimistically remove
     const snapshot = data
     setData(d => d ? { ...d, members: d.members.filter(m => m.id !== memberId) } : d)
     setRemovingMemberId(memberId)
@@ -204,14 +233,7 @@ export default function SessionPage() {
   const openAdd = () => { setEditingExpense(null); setShowExpenseModal(true) }
   const openEdit = (expense: Expense) => { setEditingExpense(expense); setShowExpenseModal(true) }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-400 text-sm">Loading session…</p>
-      </div>
-    )
-  }
+  if (loading) return <SessionSkeleton />
 
   if (locked && data) {
     return <PasscodeModal sessionId={id} onUnlocked={() => { setLocked(false); setLoading(true); fetchData() }} />
@@ -219,7 +241,7 @@ export default function SessionPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center dark:bg-gray-900">
         <div className="text-center">
           <p className="text-red-500 text-sm mb-2">{error || 'Session not found.'}</p>
           <a href="/" className="text-blue-600 text-sm hover:underline">Go home</a>
@@ -236,7 +258,7 @@ export default function SessionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Settled banner */}
       {session.is_settled && (
         <div className="bg-green-600 text-white text-center text-sm py-2 flex items-center justify-center gap-2">
@@ -245,19 +267,19 @@ export default function SessionPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <button onClick={() => router.push('/')}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-1 transition">
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 mb-1 transition">
                 <ArrowLeft size={12} /> Home
               </button>
               {editingName ? (
                 <div className="flex items-center gap-2">
                   <input autoFocus value={nameInput} onChange={e => setNameInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
-                    className="text-xl font-bold border-b-2 border-blue-500 bg-transparent focus:outline-none" />
+                    className="text-xl font-bold border-b-2 border-blue-500 bg-transparent dark:text-gray-100 focus:outline-none" />
                   <button onClick={handleSaveName} disabled={savingName}
                     className="text-xs text-blue-600 font-medium disabled:opacity-50">
                     {savingName ? '…' : 'Save'}
@@ -266,7 +288,7 @@ export default function SessionPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-xl font-bold truncate">{session.name}</h1>
+                  <h1 className="text-xl font-bold truncate dark:text-gray-100">{session.name}</h1>
                   {user && (
                     <button onClick={() => { setNameInput(session.name); setEditingName(true) }}
                       className="text-gray-400 hover:text-blue-500 shrink-0">
@@ -275,24 +297,25 @@ export default function SessionPage() {
                   )}
                 </div>
               )}
-              <p className="text-sm text-gray-500 truncate">
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {members.map(m => m.name).join(' · ')}
               </p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              <ThemeToggle />
               <button onClick={handleCopyLink}
-                className="flex items-center gap-1 text-xs text-gray-600 border rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition">
+                className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <Copy size={12} />
                 {copied ? 'Copied!' : 'Copy Link'}
               </button>
               <button onClick={() => setShowQR(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 border rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition">
+                className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <QrCode size={12} />
               </button>
               {user ? (
                 <button onClick={() => supabase.auth.signOut()}
-                  className="flex items-center gap-1 text-xs text-gray-600 border rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition"
+                  className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                   title={user.email ?? ''}>
                   <LogOut size={12} /> Sign Out
                 </button>
@@ -310,13 +333,13 @@ export default function SessionPage() {
           {currencies.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {currencies.map(c => (
-                <span key={c.id} className="flex items-center gap-1 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                <span key={c.id} className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 px-2 py-0.5 rounded">
                   1 {c.currency_code} =&nbsp;
                   {editingRateId === c.id ? (
                     <>
                       <input autoFocus type="number" step="any" min="0.000001" value={rateInput}
                         onChange={e => setRateInput(e.target.value)}
-                        className="w-16 border rounded px-1 py-0 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        className="w-16 border dark:border-gray-600 rounded px-1 py-0 text-xs bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
                         onKeyDown={e => { if (e.key === 'Enter') handleSaveRate(c.id); if (e.key === 'Escape') setEditingRateId(null) }} />
                       <button onClick={() => handleSaveRate(c.id)} disabled={savingRate}
                         className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50">
@@ -349,18 +372,18 @@ export default function SessionPage() {
 
         {/* Actions bar */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
             Expenses ({expenses.length})
           </h2>
           <div className="flex gap-2">
             {user && (
               <button onClick={handleToggleSettle} disabled={settlingSession}
-                className={`flex items-center gap-1 text-sm border rounded-lg px-3 py-1.5 transition disabled:opacity-50 ${session.is_settled ? 'border-green-400 text-green-700 hover:bg-green-50' : 'hover:bg-white'}`}>
+                className={`flex items-center gap-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 transition disabled:opacity-50 ${session.is_settled ? 'border-green-400 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}>
                 {session.is_settled ? <><RotateCcw size={13} /> Reopen</> : <><CheckCircle size={13} /> Mark Settled</>}
               </button>
             )}
             <button onClick={() => setShowSettlement(true)} disabled={expenses.length === 0}
-              className="flex items-center gap-1 text-sm border rounded-lg px-3 py-1.5 hover:bg-white transition disabled:opacity-40">
+              className="flex items-center gap-1 text-sm border dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-1.5 hover:bg-white dark:hover:bg-gray-700 transition disabled:opacity-40">
               <Calculator size={14} /> Settle Up
             </button>
             {user && !session.is_settled && (
@@ -383,7 +406,6 @@ export default function SessionPage() {
             )}
           </div>
         ) : (() => {
-          // Group by expense_date, sort days descending
           const groups: Record<string, typeof expenses> = {}
           for (const e of expenses) {
             const day = e.expense_date ?? e.created_at.split('T')[0]
@@ -407,10 +429,9 @@ export default function SessionPage() {
                 const dayTotal = groups[day].reduce((sum, e) => sum + e.amount * rateFor(e.currency_code), 0)
                 return (
                   <div key={day}>
-                    {/* Day header */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{formatDay(day)}</span>
-                      <span className="text-xs text-gray-400 tabular-nums">{dayTotal.toFixed(2)} SGD</span>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{formatDay(day)}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">{dayTotal.toFixed(2)} SGD</span>
                     </div>
                     <div className="space-y-2">
                       {groups[day].map(expense => {
@@ -419,25 +440,25 @@ export default function SessionPage() {
                         const categoryEmoji = CATEGORIES.find(c => c.id === expense.category)?.emoji ?? '📦'
                         return (
                           <div key={expense.id}
-                            className={`bg-white border rounded-lg p-4 ${exitingId === expense.id ? 'expense-exit' : 'expense-enter'}`}>
+                            className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 ${exitingId === expense.id ? 'expense-exit' : 'expense-enter'}`}>
                             <div className="flex items-start gap-3">
                               <div className="text-2xl leading-none pt-0.5 shrink-0">{categoryEmoji}</div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-900 truncate">{expense.description}</p>
+                                <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{expense.description}</p>
                                 <div className="flex items-baseline gap-2 mt-0.5">
-                                  <span className="text-sm font-semibold text-gray-800">
+                                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                                     {expense.amount.toFixed(2)} {expense.currency_code}
                                   </span>
                                   {expense.currency_code !== 'SGD' && (
-                                    <span className="text-xs text-gray-400">≈ {amountSGD.toFixed(2)} SGD</span>
+                                    <span className="text-xs text-gray-400 dark:text-gray-500">≈ {amountSGD.toFixed(2)} SGD</span>
                                   )}
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   Paid by <span className="font-medium">{expense.paid_by?.name}</span>
                                   {splitNames && <> &middot; Split: {splitNames}</>}
                                 </p>
                                 {expense.notes && (
-                                  <p className="text-xs text-gray-400 mt-0.5 italic">"{expense.notes}"</p>
+                                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 italic">"{expense.notes}"</p>
                                 )}
                               </div>
                               {user && !session.is_settled && (
@@ -464,31 +485,27 @@ export default function SessionPage() {
           )
         })()}
 
-        {/* Member management (logged-in only) */}
+        {/* Member management */}
         {user && (
           <div className="mt-8">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
               <Users size={12} /> Members
             </h3>
-            <div className="bg-white border rounded-lg divide-y">
+            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg divide-y dark:divide-gray-700">
               {members.map(m => (
                 <div key={m.id} className="flex items-center justify-between px-4 py-2.5">
-                  <span className="text-sm text-gray-700">{m.name}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{m.name}</span>
                   <button onClick={() => handleRemoveMember(m.id)} disabled={removingMemberId === m.id}
-                    className="text-gray-300 hover:text-red-400 disabled:opacity-40 transition" title="Remove member">
+                    className="text-gray-300 dark:text-gray-600 hover:text-red-400 disabled:opacity-40 transition" title="Remove member">
                     <Trash2 size={13} />
                   </button>
                 </div>
               ))}
               <div className="flex items-center gap-2 px-4 py-2.5">
-                <input
-                  type="text"
-                  value={newMemberName}
-                  onChange={e => setNewMemberName(e.target.value)}
+                <input type="text" value={newMemberName} onChange={e => setNewMemberName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleAddMember() }}
                   placeholder="New member name…"
-                  className="flex-1 text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                  className="flex-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <button onClick={handleAddMember} disabled={addingMember || !newMemberName.trim()}
                   className="flex items-center gap-1 text-sm text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
                   <Plus size={13} /> {addingMember ? '…' : 'Add'}
@@ -521,6 +538,19 @@ export default function SessionPage() {
 
       {showQR && (
         <QRModal url={typeof window !== 'undefined' ? window.location.href : ''} onClose={() => setShowQR(false)} />
+      )}
+
+      {/* Undo delete toast */}
+      {pendingDelete && (
+        <UndoToast
+          message={`"${pendingDelete.expense.description}" deleted`}
+          onUndo={handleUndoDelete}
+          onExpire={async () => {
+            setPendingDelete(null)
+            await fetch(`/api/expenses/${pendingDelete.expense.id}`, { method: 'DELETE' })
+            setAuditKey(k => k + 1)
+          }}
+        />
       )}
     </div>
   )
