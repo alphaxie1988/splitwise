@@ -33,12 +33,21 @@ function calculateSettlement(
     const splits = expense.splits ?? []
     if (splits.length === 0) continue
     const amountSGD = expense.amount * rateFor(expense.currency_code)
-    const perPerson = amountSGD / splits.length
-    balances[expense.paid_by_member_id] = (balances[expense.paid_by_member_id] ?? 0) + amountSGD
-    totalPaid[expense.paid_by_member_id] = (totalPaid[expense.paid_by_member_id] ?? 0) + amountSGD
-    for (const split of splits) {
-      balances[split.member_id] = (balances[split.member_id] ?? 0) - perPerson
+    // Work in integer cents to avoid floating-point rounding errors
+    const totalCents = Math.round(amountSGD * 100)
+    const perPersonCents = Math.floor(totalCents / splits.length)
+    const remainderCents = totalCents % splits.length
+    balances[expense.paid_by_member_id] = (balances[expense.paid_by_member_id] ?? 0) + totalCents
+    totalPaid[expense.paid_by_member_id] = (totalPaid[expense.paid_by_member_id] ?? 0) + totalCents
+    for (let i = 0; i < splits.length; i++) {
+      const splitCents = perPersonCents + (i < remainderCents ? 1 : 0)
+      balances[splits[i].member_id] = (balances[splits[i].member_id] ?? 0) - splitCents
     }
+  }
+  // Convert cents back to dollars
+  for (const key of Object.keys(balances)) {
+    balances[key] = balances[key] / 100
+    totalPaid[key] = totalPaid[key] / 100
   }
 
   const pos = members.filter(m => balances[m.id] > 0.005).map(m => ({ ...m, bal: balances[m.id] })).sort((a, b) => b.bal - a.bal)

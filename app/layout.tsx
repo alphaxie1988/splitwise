@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SplitEasy — Split expenses without signing up',
+  title: 'Splitwise — Split expenses without signing up',
   description: 'Create a session, share the link, track who owes who.',
+  icons: { icon: '/icon.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -79,9 +79,12 @@ export default function Home() {
 
         {/* Header */}
         <div className="flex items-start justify-between mb-10">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-1">SplitEasy</h1>
-            <p className="text-gray-500 text-sm">Split expenses with friends.</p>
+          <div className="flex items-center gap-3">
+            <img src="/icon.svg" alt="Splitwise" className="w-12 h-12 rounded-xl shadow-sm" />
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-1">Splitwise</h1>
+              <p className="text-gray-500 text-sm">Split expenses with friends.</p>
+            </div>
           </div>
           <div className="pt-1">
             {user ? (
