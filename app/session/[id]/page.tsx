@@ -435,7 +435,9 @@ export default function SessionPage() {
                     </div>
                     <div className="space-y-2">
                       {groups[day].map(expense => {
-                        const splitNames = expense.splits?.map(s => s.member?.name ?? '').filter(Boolean).join(', ')
+                        const splitIds = expense.splits?.map(s => s.member_id) ?? []
+                        const splitAll = splitIds.length === members.length && members.every(m => splitIds.includes(m.id))
+                        const splitNames = splitAll ? 'All' : expense.splits?.map(s => s.member?.name ?? '').filter(Boolean).join(', ')
                         const amountSGD = expense.amount * rateFor(expense.currency_code)
                         const categoryEmoji = CATEGORIES.find(c => c.id === expense.category)?.emoji ?? '📦'
                         return (
