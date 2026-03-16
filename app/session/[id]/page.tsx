@@ -269,40 +269,13 @@ export default function SessionPage() {
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <button onClick={() => router.push('/')}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 mb-1 transition">
-                <ArrowLeft size={12} /> Home
-              </button>
-              {editingName ? (
-                <div className="flex items-center gap-2">
-                  <input autoFocus value={nameInput} onChange={e => setNameInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
-                    className="text-xl font-bold border-b-2 border-blue-500 bg-transparent dark:text-gray-100 focus:outline-none" />
-                  <button onClick={handleSaveName} disabled={savingName}
-                    className="text-xs text-blue-600 font-medium disabled:opacity-50">
-                    {savingName ? '…' : 'Save'}
-                  </button>
-                  <button onClick={() => setEditingName(false)} className="text-xs text-gray-400">Cancel</button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <h1 className="text-xl font-bold truncate dark:text-gray-100">{session.name}</h1>
-                  {user && (
-                    <button onClick={() => { setNameInput(session.name); setEditingName(true) }}
-                      className="text-gray-400 hover:text-blue-500 shrink-0">
-                      <Pencil size={13} />
-                    </button>
-                  )}
-                </div>
-              )}
-              <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug mt-0.5">
-                {members.map(m => m.name).join(' · ')}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
+          {/* Row 1: back + buttons */}
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <button onClick={() => router.push('/')}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+              <ArrowLeft size={12} /> Home
+            </button>
+            <div className="flex items-center gap-2">
               <ThemeToggle />
               <button onClick={handleCopyLink}
                 className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
@@ -328,6 +301,35 @@ export default function SessionPage() {
               )}
             </div>
           </div>
+
+          {/* Row 2: session name (full width) */}
+          {editingName ? (
+            <div className="flex items-center gap-2">
+              <input autoFocus value={nameInput} onChange={e => setNameInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
+                className="text-xl font-bold border-b-2 border-blue-500 bg-transparent dark:text-gray-100 focus:outline-none flex-1 min-w-0" />
+              <button onClick={handleSaveName} disabled={savingName}
+                className="text-xs text-blue-600 font-medium disabled:opacity-50 shrink-0">
+                {savingName ? '…' : 'Save'}
+              </button>
+              <button onClick={() => setEditingName(false)} className="text-xs text-gray-400 shrink-0">Cancel</button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xl font-bold dark:text-gray-100">{session.name}</h1>
+              {user && (
+                <button onClick={() => { setNameInput(session.name); setEditingName(true) }}
+                  className="text-gray-400 hover:text-blue-500 shrink-0">
+                  <Pencil size={13} />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Row 3: members full width */}
+          <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug mt-0.5 w-full">
+            {members.map(m => m.name).join(' · ')}
+          </p>
 
           {/* Exchange rates strip */}
           {currencies.length > 0 && (
