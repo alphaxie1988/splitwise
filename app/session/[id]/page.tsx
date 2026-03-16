@@ -297,7 +297,7 @@ export default function SessionPage() {
                   )}
                 </div>
               )}
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug mt-0.5">
                 {members.map(m => m.name).join(' · ')}
               </p>
             </div>
@@ -307,7 +307,7 @@ export default function SessionPage() {
               <button onClick={handleCopyLink}
                 className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <Copy size={12} />
-                {copied ? 'Copied!' : 'Copy Link'}
+                <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy Link'}</span>
               </button>
               <button onClick={() => setShowQR(true)}
                 className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
@@ -317,13 +317,13 @@ export default function SessionPage() {
                 <button onClick={() => supabase.auth.signOut()}
                   className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                   title={user.email ?? ''}>
-                  <LogOut size={12} /> Sign Out
+                  <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
                 </button>
               ) : (
                 <button onClick={handleSignIn} disabled={authLoading}
                   className="flex items-center gap-1 text-xs text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
                   <LogIn size={12} />
-                  Sign In to Edit
+                  <span className="hidden sm:inline">Sign In to Edit</span>
                 </button>
               )}
             </div>
