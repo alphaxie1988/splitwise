@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Clock, Users, ArrowRight, LogIn, LogOut } from 'lucide-react'
+import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ChevronUp } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import CreateSessionModal from '@/components/CreateSessionModal'
@@ -15,12 +15,22 @@ interface RecentSession {
   lastVisited: string
 }
 
+function getArchivedIds(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem('archivedSessions') ?? '[]')) } catch { return new Set() }
+}
+
+function saveArchivedIds(ids: Set<string>) {
+  localStorage.setItem('archivedSessions', JSON.stringify([...ids]))
+}
+
 export default function Home() {
   const [showModal, setShowModal] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(false)
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set())
+  const [showArchived, setShowArchived] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -38,11 +48,11 @@ export default function Home() {
   }
 
   useEffect(() => {
+    setArchivedIds(getArchivedIds())
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       loadSessions(!!user)
     })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null
       setUser(u)
@@ -63,6 +73,16 @@ export default function Home() {
     await supabase.auth.signOut()
   }
 
+  const toggleArchive = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    setArchivedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      saveArchivedIds(next)
+      return next
+    })
+  }
+
   function formatRelative(iso: string) {
     const diff = Date.now() - new Date(iso).getTime()
     const mins = Math.floor(diff / 60000)
@@ -73,6 +93,35 @@ export default function Home() {
     if (hours < 24) return `${hours}h ago`
     return `${days}d ago`
   }
+
+  const activeSessions = recentSessions.filter(s => !archivedIds.has(s.id))
+  const archivedSessions = recentSessions.filter(s => archivedIds.has(s.id))
+
+  const SessionCard = ({ s, archived }: { s: RecentSession; archived: boolean }) => (
+    <div
+      onClick={() => router.push(`/session/${s.id}`)}
+      className="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-between group cursor-pointer"
+    >
+      <div className="min-w-0 flex-1">
+        <p className={`font-medium truncate ${archived ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{s.name}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+          <Users size={10} />
+          <span className="truncate">{s.members.join(', ')}</span>
+        </p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0 ml-3">
+        <span className="text-xs text-gray-400 dark:text-gray-500">{formatRelative(s.lastVisited)}</span>
+        <button
+          onClick={e => toggleArchive(e, s.id)}
+          title={archived ? 'Unarchive' : 'Archive'}
+          className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 transition opacity-0 group-hover:opacity-100"
+        >
+          {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+        </button>
+        <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition" />
+      </div>
+    </div>
+  )
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -119,7 +168,7 @@ export default function Home() {
           <ArrowRight size={18} className="text-blue-300" />
         </button>
 
-        {/* Recent sessions */}
+        {/* Active sessions */}
         <div>
           <h2 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Clock size={12} /> Recent Sessions
@@ -134,29 +183,32 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          ) : recentSessions.length === 0 ? (
+          ) : activeSessions.length === 0 ? (
             <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">No sessions yet. Create one above!</p>
           ) : (
             <div className="space-y-2">
-              {recentSessions.map(s => (
-                <button key={s.id} onClick={() => router.push(`/session/${s.id}`)}
-                  className="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-between group">
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{s.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                      <Users size={10} />
-                      <span className="truncate">{s.members.join(', ')}</span>
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-3">
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{formatRelative(s.lastVisited)}</span>
-                    <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 dark:group-hover:text-gray-400 transition" />
-                  </div>
-                </button>
-              ))}
+              {activeSessions.map(s => <SessionCard key={s.id} s={s} archived={false} />)}
             </div>
           )}
         </div>
+
+        {/* Archived sessions */}
+        {archivedSessions.length > 0 && (
+          <div className="mt-6">
+            <button
+              onClick={() => setShowArchived(v => !v)}
+              className="w-full flex items-center justify-between text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3 hover:text-gray-500 dark:hover:text-gray-400 transition"
+            >
+              <span className="flex items-center gap-1.5"><Archive size={12} /> Archived ({archivedSessions.length})</span>
+              {showArchived ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+            {showArchived && (
+              <div className="space-y-2">
+                {archivedSessions.map(s => <SessionCard key={s.id} s={s} archived={true} />)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {showModal && (
