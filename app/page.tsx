@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import CreateSessionModal from '@/components/CreateSessionModal'
 import ThemeToggle from '@/components/ThemeToggle'
+import InstallPWA from '@/components/InstallPWA'
 
 interface RecentSession {
   id: string
@@ -174,7 +175,7 @@ export default function Home() {
 
         {/* New session button */}
         <button onClick={() => setShowModal(true)}
-          className="w-full flex items-center justify-between bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-4 mb-8 transition shadow-sm">
+          className="w-full flex items-center justify-between bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-4 transition shadow-sm">
           <div className="flex items-center gap-3">
             <Plus size={20} />
             <div className="text-left">
@@ -184,6 +185,11 @@ export default function Home() {
           </div>
           <ArrowRight size={18} className="text-blue-300" />
         </button>
+
+        {/* Install PWA prompt */}
+        <InstallPWA />
+
+        <div className="mb-8" />
 
         {/* Active sessions */}
         <div>
