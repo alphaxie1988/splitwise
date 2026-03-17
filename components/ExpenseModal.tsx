@@ -62,6 +62,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
     if (id === 'transfer') {
       const other = members.find(m => m.id !== paidBy)
       setTransferTo(other?.id ?? '')
+      if (!description.trim()) setDescription('Transfer')
     }
   }
 
@@ -126,7 +127,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-gray-100">{expense ? 'Edit Expense' : 'Add Expense'}</h2>
+          <h2 className="text-lg font-semibold dark:text-gray-100">{expense ? 'Edit Expense' : isTransfer ? 'Add Transfer' : 'Add Expense'}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
             <X size={18} />
           </button>
@@ -240,7 +241,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
 
           <button type="submit" disabled={loading}
             className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition">
-            {loading ? 'Saving…' : expense ? 'Save Changes' : 'Add Expense'}
+            {loading ? 'Saving…' : expense ? 'Save Changes' : isTransfer ? 'Add Transfer' : 'Add Expense'}
           </button>
         </form>
       </div>

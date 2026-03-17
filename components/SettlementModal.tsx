@@ -101,6 +101,7 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
   }
 
   const totalExpensesSGD = expenses.reduce((sum, e) => {
+    if (e.category === 'transfer') return sum
     const rate = e.currency_code === 'SGD' ? 1 : currencies.find(c => c.currency_code === e.currency_code)?.rate_to_sgd ?? 1
     return sum + e.amount * rate
   }, 0)
@@ -187,7 +188,7 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
 
           {tab === 'summary' && (
             <div className="space-y-3">
-              <p className="text-xs text-gray-400">Total trip spend: <span className="font-medium text-gray-700 dark:text-gray-200">{totalExpensesSGD.toFixed(2)} SGD</span></p>
+              <p className="text-xs text-gray-400">Total Session Amount: <span className="font-medium text-gray-700 dark:text-gray-200">{totalExpensesSGD.toFixed(2)} SGD</span></p>
               {members.map(m => {
                 const paid = expenses.reduce((sum, e) => {
                   if (e.paid_by_member_id !== m.id) return sum
