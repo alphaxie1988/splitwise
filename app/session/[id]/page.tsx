@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, QrCode, Users, RotateCcw } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
@@ -46,7 +46,6 @@ export default function SessionPage() {
 
   // Undo delete state
   const [pendingDelete, setPendingDelete] = useState<{ expense: Expense; index: number } | null>(null)
-  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const supabase = createClient()
 
@@ -121,24 +120,16 @@ export default function SessionPage() {
     setData(d => d ? { ...d, expenses: d.expenses.filter(e => e.id !== expenseId) } : d)
     setDeleteId(null); setExitingId(null)
 
-    // Cancel any previous pending delete
-    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
-    // Commit the previous one if it exists before showing new toast
+    // Commit the previous pending delete (if any) before showing new toast
     if (pendingDelete) {
       await fetch(`/api/expenses/${pendingDelete.expense.id}`, { method: 'DELETE' })
     }
 
-    // Show undo toast, schedule actual delete after 5s
+    // Show undo toast — actual delete is handled by onExpire in UndoToast
     setPendingDelete({ expense, index: idx })
-    undoTimerRef.current = setTimeout(async () => {
-      setPendingDelete(null)
-      await fetch(`/api/expenses/${expenseId}`, { method: 'DELETE' })
-      setAuditKey(k => k + 1)
-    }, 5000)
   }
 
   const handleUndoDelete = () => {
-    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
     if (pendingDelete) {
       setData(d => {
         if (!d) return d
@@ -561,6 +552,7 @@ export default function SessionPage() {
       {/* Undo delete toast */}
       {pendingDelete && (
         <UndoToast
+          key={pendingDelete.expense.id}
           message={`"${pendingDelete.expense.description}" deleted`}
           onUndo={handleUndoDelete}
           onExpire={async () => {
