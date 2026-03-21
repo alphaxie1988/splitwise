@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, QrCode, Users, RotateCcw } from 'lucide-react'
+import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, QrCode, Users, RotateCcw, Download } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
@@ -259,6 +259,61 @@ export default function SessionPage() {
     return currencies.find(c => c.currency_code === code)?.rate_to_sgd ?? 1
   }
 
+  const handleExportCSV = () => {
+    const escapeCell = (val: string | number) => {
+      const str = String(val)
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"`
+        : str
+    }
+
+    const headers = ['Date', 'Description', 'Category', 'Cost', 'Currency', 'Cost in SGD', ...members.map(m => m.name)]
+    const memberTotals = new Array(members.length).fill(0)
+    let totalCostSGD = 0
+
+    const dataRows = expenses.map(expense => {
+      const amountSGD = expense.amount * rateFor(expense.currency_code)
+      const splitIds = new Set(expense.splits?.map(s => s.member_id) ?? members.map(m => m.id))
+      const splitCount = splitIds.size
+      const sharePerPerson = splitCount > 0 ? amountSGD / splitCount : 0
+      totalCostSGD += amountSGD
+
+      const memberValues = members.map((m, i) => {
+        const paid = expense.paid_by_member_id === m.id
+        const inSplit = splitIds.has(m.id)
+        let val = 0
+        if (paid) val += amountSGD
+        if (inSplit) val -= sharePerPerson
+        memberTotals[i] += val
+        return val !== 0 ? val : ''
+      })
+
+      return [
+        expense.expense_date ?? expense.created_at.split('T')[0],
+        expense.description,
+        CATEGORIES.find(c => c.id === expense.category)?.label ?? expense.category,
+        expense.amount,
+        expense.currency_code,
+        amountSGD,
+        ...memberValues,
+      ]
+    })
+
+    const totalRow = ['Total', '', '', '', '', totalCostSGD, ...memberTotals]
+
+    const csv = [headers, ...dataRows, totalRow]
+      .map(row => row.map(escapeCell).join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${session.name.replace(/[^a-z0-9]/gi, '_')}_expenses.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Settled banner */}
@@ -287,6 +342,11 @@ export default function SessionPage() {
               <button onClick={() => setShowQR(true)}
                 className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <QrCode size={12} />
+              </button>
+              <button onClick={handleExportCSV} disabled={expenses.length === 0}
+                className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-40"
+                title="Export to CSV">
+                <Download size={12} />
               </button>
               {user ? (
                 <button onClick={() => supabase.auth.signOut()}
