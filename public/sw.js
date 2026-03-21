@@ -1,5 +1,5 @@
-const CACHE = 'splitwise-v1'
-const PRECACHE = ['/', '/icon.svg', '/manifest.json']
+const CACHE = 'splitwise-v2'
+const PRECACHE = ['/icon.svg', '/manifest.json']
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)))
@@ -25,17 +25,31 @@ self.addEventListener('fetch', e => {
     return
   }
 
-  // Cache-first for static assets
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached
-      return fetch(e.request).then(res => {
-        if (res.ok) {
-          const clone = res.clone()
-          caches.open(CACHE).then(c => c.put(e.request, clone))
-        }
-        return res
+  // Cache-first for hashed static assets (safe to cache long-term)
+  if (e.request.url.includes('/_next/static/')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached
+        return fetch(e.request).then(res => {
+          if (res.ok) {
+            const clone = res.clone()
+            caches.open(CACHE).then(c => c.put(e.request, clone))
+          }
+          return res
+        })
       })
-    })
+    )
+    return
+  }
+
+  // Network-first for everything else (HTML pages, etc.)
+  e.respondWith(
+    fetch(e.request).then(res => {
+      if (res.ok) {
+        const clone = res.clone()
+        caches.open(CACHE).then(c => c.put(e.request, clone))
+      }
+      return res
+    }).catch(() => caches.match(e.request))
   )
 })
