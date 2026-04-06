@@ -448,7 +448,7 @@ export default function SessionPage() {
             )}
             <button onClick={() => setShowSettlement(true)} disabled={expenses.length === 0}
               className="flex items-center gap-1 text-sm border dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-1.5 hover:bg-white dark:hover:bg-gray-700 transition disabled:opacity-40">
-              <Calculator size={14} /> Settle Up
+              <Calculator size={14} /> Summary
             </button>
             {user && !session.is_settled && (
               <button onClick={openAdd}
