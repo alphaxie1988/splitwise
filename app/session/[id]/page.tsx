@@ -385,10 +385,31 @@ export default function SessionPage() {
             </div>
           )}
 
-          {/* Row 3: members full width */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug mt-0.5 w-full">
-            {members.map(m => m.name).join(' · ')}
-          </p>
+          {/* Row 3: member filter pills */}
+          <div className="flex flex-wrap gap-1.5 mt-1 w-full">
+            {members.length > 1 && (
+              <button
+                onClick={() => setFilterMemberId(null)}
+                className={`text-xs px-2.5 py-0.5 rounded-full border transition ${
+                  !filterMemberId
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}>
+                All
+              </button>
+            )}
+            {members.map(m => (
+              <button key={m.id}
+                onClick={() => setFilterMemberId(prev => prev === m.id ? null : m.id)}
+                className={`text-xs px-2.5 py-0.5 rounded-full border transition ${
+                  filterMemberId === m.id
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}>
+                {m.name}
+              </button>
+            ))}
+          </div>
 
           {/* Exchange rates strip */}
           {currencies.length > 0 && (
@@ -455,32 +476,6 @@ export default function SessionPage() {
             )}
           </div>
         </div>
-
-        {/* Member filter pills */}
-        {members.length > 1 && expenses.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide mb-4">
-            <button
-              onClick={() => setFilterMemberId(null)}
-              className={`shrink-0 text-xs px-3 py-1 rounded-full border transition ${
-                !filterMemberId
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
-              }`}>
-              All
-            </button>
-            {members.map(m => (
-              <button key={m.id}
-                onClick={() => setFilterMemberId(prev => prev === m.id ? null : m.id)}
-                className={`shrink-0 text-xs px-3 py-1 rounded-full border transition ${
-                  filterMemberId === m.id
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
-                }`}>
-                {m.name}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Expense list grouped by day */}
         {expenses.length === 0 ? (
