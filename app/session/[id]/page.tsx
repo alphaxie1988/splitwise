@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Plus, Calculator, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, Share2, Users, RotateCcw, Download } from 'lucide-react'
+import { Plus, Calculator, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, Share2, Users, RotateCcw, Download, Search, X as XIcon } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
@@ -36,6 +36,7 @@ export default function SessionPage() {
   const [savingRate, setSavingRate] = useState(false)
   const [locked, setLocked] = useState(false)
   const [filterMemberId, setFilterMemberId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -248,12 +249,14 @@ export default function SessionPage() {
 
   const { session, members, currencies, expenses, confirmedSettlements } = data
 
-  const visibleExpenses = filterMemberId
-    ? expenses.filter(e =>
-        e.paid_by_member_id === filterMemberId ||
-        e.splits?.some(s => s.member_id === filterMemberId)
-      )
-    : expenses
+  const visibleExpenses = expenses.filter(e => {
+    if (filterMemberId && e.paid_by_member_id !== filterMemberId && !e.splits?.some(s => s.member_id === filterMemberId)) return false
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      if (!e.description.toLowerCase().includes(q) && !(e.notes ?? '').toLowerCase().includes(q)) return false
+    }
+    return true
+  })
 
   const rateFor = (code: string) => {
     if (code === 'SGD') return 1
@@ -455,7 +458,7 @@ export default function SessionPage() {
         {/* Actions bar */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Expenses ({filterMemberId ? `${visibleExpenses.length} of ${expenses.length}` : expenses.length})
+            Expenses ({(filterMemberId || searchQuery) ? `${visibleExpenses.length} of ${expenses.length}` : expenses.length})
           </h2>
           <div className="flex gap-2">
             {user && (
@@ -477,6 +480,25 @@ export default function SessionPage() {
           </div>
         </div>
 
+        {/* Search */}
+        {expenses.length > 0 && (
+          <div className="relative mb-4">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search expenses…"
+              className="w-full border dark:border-gray-600 rounded-lg pl-8 pr-8 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <XIcon size={14} />
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Expense list grouped by day */}
         {expenses.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
@@ -490,7 +512,7 @@ export default function SessionPage() {
         ) : (() => {
           if (visibleExpenses.length === 0) return (
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-12">
-              No expenses for {members.find(m => m.id === filterMemberId)?.name}.
+              {searchQuery ? `No expenses matching "${searchQuery}".` : `No expenses for ${members.find(m => m.id === filterMemberId)?.name}.`}
             </p>
           )
           const groups: Record<string, typeof visibleExpenses> = {}
