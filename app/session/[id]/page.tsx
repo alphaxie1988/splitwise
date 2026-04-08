@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Plus, Calculator, Copy, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, QrCode, Users, RotateCcw, Download } from 'lucide-react'
+import { Plus, Calculator, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle, Share2, Users, RotateCcw, Download } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
@@ -11,7 +11,7 @@ import ExpenseModal from '@/components/ExpenseModal'
 import SettlementModal from '@/components/SettlementModal'
 import AuditLogSection from '@/components/AuditLogSection'
 import PasscodeModal from '@/components/PasscodeModal'
-import QRModal from '@/components/QRModal'
+import ShareModal from '@/components/ShareModal'
 import SessionSkeleton from '@/components/SessionSkeleton'
 import UndoToast from '@/components/UndoToast'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -27,7 +27,7 @@ export default function SessionPage() {
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showSettlement, setShowSettlement] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [exitingId, setExitingId] = useState<string | null>(null)
   const [auditKey, setAuditKey] = useState(0)
@@ -35,7 +35,6 @@ export default function SessionPage() {
   const [rateInput, setRateInput] = useState('')
   const [savingRate, setSavingRate] = useState(false)
   const [locked, setLocked] = useState(false)
-  const [showQR, setShowQR] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -98,12 +97,6 @@ export default function SessionPage() {
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback?next=/session/${id}` },
     })
-  }
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   const handleDeleteExpense = async (expenseId: string) => {
@@ -334,14 +327,10 @@ export default function SessionPage() {
             </button>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <button onClick={handleCopyLink}
+              <button onClick={() => setShowShare(true)}
                 className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                <Copy size={12} />
-                <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy Link'}</span>
-              </button>
-              <button onClick={() => setShowQR(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                <QrCode size={12} />
+                <Share2 size={12} />
+                <span className="hidden sm:inline">Share</span>
               </button>
               <button onClick={handleExportCSV} disabled={expenses.length === 0}
                 className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-40"
@@ -358,7 +347,7 @@ export default function SessionPage() {
                 <button onClick={handleSignIn} disabled={authLoading}
                   className="flex items-center gap-1 text-xs text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
                   <LogIn size={12} />
-                  <span className="hidden sm:inline">Sign In to Edit</span>
+                  <span>Sign In to Edit</span>
                 </button>
               )}
             </div>
@@ -605,8 +594,8 @@ export default function SessionPage() {
           onSettlementChange={() => { fetchData(); setAuditKey(k => k + 1) }} />
       )}
 
-      {showQR && (
-        <QRModal url={typeof window !== 'undefined' ? window.location.href : ''} onClose={() => setShowQR(false)} />
+      {showShare && (
+        <ShareModal url={typeof window !== 'undefined' ? window.location.href : ''} onClose={() => setShowShare(false)} />
       )}
 
       {/* Undo delete toast */}
