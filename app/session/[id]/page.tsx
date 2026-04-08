@@ -35,6 +35,7 @@ export default function SessionPage() {
   const [rateInput, setRateInput] = useState('')
   const [savingRate, setSavingRate] = useState(false)
   const [locked, setLocked] = useState(false)
+  const [filterMemberId, setFilterMemberId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -247,6 +248,13 @@ export default function SessionPage() {
 
   const { session, members, currencies, expenses, confirmedSettlements } = data
 
+  const visibleExpenses = filterMemberId
+    ? expenses.filter(e =>
+        e.paid_by_member_id === filterMemberId ||
+        e.splits?.some(s => s.member_id === filterMemberId)
+      )
+    : expenses
+
   const rateFor = (code: string) => {
     if (code === 'SGD') return 1
     return currencies.find(c => c.currency_code === code)?.rate_to_sgd ?? 1
@@ -426,7 +434,7 @@ export default function SessionPage() {
         {/* Actions bar */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Expenses ({expenses.length})
+            Expenses ({filterMemberId ? `${visibleExpenses.length} of ${expenses.length}` : expenses.length})
           </h2>
           <div className="flex gap-2">
             {user && (
@@ -448,6 +456,32 @@ export default function SessionPage() {
           </div>
         </div>
 
+        {/* Member filter pills */}
+        {members.length > 1 && expenses.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide mb-4">
+            <button
+              onClick={() => setFilterMemberId(null)}
+              className={`shrink-0 text-xs px-3 py-1 rounded-full border transition ${
+                !filterMemberId
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+              }`}>
+              All
+            </button>
+            {members.map(m => (
+              <button key={m.id}
+                onClick={() => setFilterMemberId(prev => prev === m.id ? null : m.id)}
+                className={`shrink-0 text-xs px-3 py-1 rounded-full border transition ${
+                  filterMemberId === m.id
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}>
+                {m.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Expense list grouped by day */}
         {expenses.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
@@ -459,8 +493,13 @@ export default function SessionPage() {
             )}
           </div>
         ) : (() => {
-          const groups: Record<string, typeof expenses> = {}
-          for (const e of expenses) {
+          if (visibleExpenses.length === 0) return (
+            <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-12">
+              No expenses for {members.find(m => m.id === filterMemberId)?.name}.
+            </p>
+          )
+          const groups: Record<string, typeof visibleExpenses> = {}
+          for (const e of visibleExpenses) {
             const day = e.expense_date ?? e.created_at.split('T')[0]
             if (!groups[day]) groups[day] = []
             groups[day].push(e)
