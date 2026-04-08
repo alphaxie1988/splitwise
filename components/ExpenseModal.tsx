@@ -19,7 +19,14 @@ const INPUT = 'w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm b
 export default function ExpenseModal({ sessionId, members, currencies, expense, onClose, onSaved }: Props) {
   const [description, setDescription] = useState(expense?.description ?? '')
   const [amount, setAmount] = useState(expense?.amount?.toString() ?? '')
-  const [currency, setCurrency] = useState(expense?.currency_code ?? 'SGD')
+  const [currency, setCurrency] = useState(() => {
+    if (expense?.currency_code) return expense.currency_code
+    try {
+      const recent: string[] = JSON.parse(localStorage.getItem('recentCurrencies') ?? '[]')
+      const available = ['SGD', ...currencies.map(c => c.currency_code)]
+      return recent.find(c => available.includes(c)) ?? 'SGD'
+    } catch { return 'SGD' }
+  })
   const [category, setCategory] = useState<CategoryId>(expense?.category ?? 'misc')
   const [paidBy, setPaidBy] = useState(() => {
     if (expense?.paid_by_member_id) return expense.paid_by_member_id
@@ -53,7 +60,6 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   })
 
   const allCurrencies = ['SGD', ...currencies.map(c => c.currency_code)]
-  const recentAvailable = recentCurrencies.filter(c => allCurrencies.includes(c) && c !== 'SGD')
 
   const isTransfer = category === 'transfer'
 
@@ -165,21 +171,6 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
             </div>
             <div className="w-28">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Currency</label>
-              {/* #18 Recently used currency chips */}
-              {recentAvailable.length > 0 && (
-                <div className="flex gap-1 mb-1">
-                  {recentAvailable.map(c => (
-                    <button key={c} type="button" onClick={() => setCurrency(c)}
-                      className={`text-xs px-2 py-0.5 rounded-full border transition ${
-                        currency === c
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                          : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
-                      }`}>
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              )}
               <select value={currency} onChange={e => setCurrency(e.target.value)} className={INPUT}>
                 {allCurrencies.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
