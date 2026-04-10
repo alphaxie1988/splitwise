@@ -320,7 +320,15 @@ export default function SessionPage() {
     const { balances } = calculateSettlement(expenses, members, currencies)
     const totalRow = ['Total', '', '', '', '', totalCostSGD, ...members.map(m => balances[m.id] ?? 0)]
 
-    const csv = [headers, ...dataRows, totalRow]
+    const warningRows = [
+      [],
+      ['Note: Individual expense rows use simple division which may be a few cents off per row due to'],
+      ['rounding (e.g. $10 split 3 ways = $3.33 + $3.33 + $3.34). The Total row is taken directly from'],
+      ['the settlement calculation and matches the Summary page exactly. Use the Total row as the'],
+      ['authoritative balance for each person.'],
+    ]
+
+    const csv = [headers, ...dataRows, totalRow, ...warningRows]
       .map(row => row.map(escapeCell).join(','))
       .join('\n')
 
