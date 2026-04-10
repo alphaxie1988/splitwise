@@ -87,10 +87,12 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                 <div className="space-y-1.5">
                   {members.map(m => {
                     const bal = balances[m.id] ?? 0
+                    const memberSettlements = settlements.filter(s => s.from.id === m.id || s.to.id === m.id)
+                    const allConfirmed = memberSettlements.length > 0 && memberSettlements.every(s => isConfirmed(s))
                     return (
                       <div key={m.id} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{m.name}</span>
-                        <span className={`text-sm font-medium tabular-nums ${bal > 0.005 ? 'text-green-600' : bal < -0.005 ? 'text-red-500' : 'text-gray-400'}`}>
+                        <span className={`text-sm ${allConfirmed ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>{m.name}</span>
+                        <span className={`text-sm font-medium tabular-nums ${allConfirmed ? 'line-through text-gray-400' : bal > 0.005 ? 'text-green-600' : bal < -0.005 ? 'text-red-500' : 'text-gray-400'}`}>
                           {bal > 0.005 ? '+' : ''}{bal.toFixed(2)} SGD
                         </span>
                       </div>
@@ -109,9 +111,9 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                       const key = `${s.from.id}-${s.to.id}`
                       return (
                         <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 dark:bg-gray-700/30 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50'}`}>
-                          <span className={`text-sm font-medium dark:text-gray-300 ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.from.name}</span>
+                          <span className="text-sm font-medium dark:text-gray-300">{s.from.name}</span>
                           <span className="text-gray-400 text-sm">→</span>
-                          <span className={`text-sm font-medium dark:text-gray-300 ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.to.name}</span>
+                          <span className="text-sm font-medium dark:text-gray-300">{s.to.name}</span>
                           <span className={`ml-auto text-sm font-semibold tabular-nums ${confirmed ? 'text-gray-400' : 'text-blue-600'}`}>
                             {s.amount.toFixed(2)} SGD
                           </span>
