@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
 import { CATEGORIES } from '@/lib/types'
+import { calculateSettlement } from '@/lib/settlement'
 import ExpenseModal from '@/components/ExpenseModal'
 import SettlementModal from '@/components/SettlementModal'
 import AuditLogSection from '@/components/AuditLogSection'
@@ -249,6 +250,11 @@ export default function SessionPage() {
 
   const { session, members, currencies, expenses, confirmedSettlements } = data
 
+  const { settlements: requiredSettlements } = calculateSettlement(expenses, members, currencies)
+  const allSettlementsConfirmed = requiredSettlements.every(s =>
+    confirmedSettlements.some(c => c.from_member_id === s.from.id && c.to_member_id === s.to.id)
+  )
+
   const visibleExpenses = expenses.filter(e => {
     if (filterMemberId && e.paid_by_member_id !== filterMemberId && !e.splits?.some(s => s.member_id === filterMemberId)) return false
     if (searchQuery) {
@@ -461,7 +467,7 @@ export default function SessionPage() {
             Expenses ({(filterMemberId || searchQuery) ? `${visibleExpenses.length} of ${expenses.length}` : expenses.length})
           </h2>
           <div className="flex gap-2">
-            {user && (
+            {user && (session.is_settled || allSettlementsConfirmed) && (
               <button onClick={handleToggleSettle} disabled={settlingSession}
                 className={`flex items-center gap-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 transition disabled:opacity-50 ${session.is_settled ? 'border-green-400 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}>
                 {session.is_settled ? <><RotateCcw size={13} /> Reopen</> : <><CheckCircle size={13} /> Mark Settled</>}
@@ -472,7 +478,14 @@ export default function SessionPage() {
               <Calculator size={14} /> Summary
             </button>
             {user && !session.is_settled && (
-              <button onClick={openAdd}
+              <button
+                onClick={() => {
+                  if (confirmedSettlements.length > 0) {
+                    alert('Cannot add expense: one or more payments have already been marked as paid. Uncheck them in the Summary first.')
+                    return
+                  }
+                  openAdd()
+                }}
                 className="flex items-center gap-1 text-sm text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700 transition">
                 <Plus size={14} /> Add Expense
               </button>
