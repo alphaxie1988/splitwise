@@ -69,9 +69,10 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
     if (!q) return []
     return Object.entries(allCurrencies)
       .filter(([code, label]) =>
-        code.startsWith(q) || label.toUpperCase().includes(q)
+        typeof code === 'string' && typeof label === 'string' &&
+        (code.startsWith(q) || label.toUpperCase().includes(q))
       )
-      .slice(0, 8)
+      .slice(0, 8) as [string, string][]
   }
 
   const handleSelectCurrency = (i: number, code: string, label: string) => {
