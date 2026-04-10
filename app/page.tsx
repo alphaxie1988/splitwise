@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import CreateSessionModal from '@/components/CreateSessionModal'
@@ -169,7 +169,18 @@ export default function Home() {
                 </button>
               )}
             </div>
-            {user && <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[160px]">{user.email}</p>}
+            {user && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[160px]">{user.email}</p>
+                {user.email === 'alphaxie1988@gmail.com' && (
+                  <button onClick={() => router.push('/admin')}
+                    title="Admin"
+                    className="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition">
+                    <ShieldCheck size={14} />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
