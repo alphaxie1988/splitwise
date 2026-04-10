@@ -12,12 +12,13 @@ interface Props {
   currencies: SessionCurrency[]
   confirmedSettlements: ConfirmedSettlement[]
   user: { email?: string | null } | null
+  isSettled?: boolean
   onClose: () => void
   onSettlementChange: () => void
 }
 
 
-export default function SettlementModal({ sessionId, expenses, members, currencies, confirmedSettlements, user, onClose, onSettlementChange }: Props) {
+export default function SettlementModal({ sessionId, expenses, members, currencies, confirmedSettlements, user, isSettled, onClose, onSettlementChange }: Props) {
   const { balances, settlements } = calculateSettlement(expenses, members, currencies)
   const [tab, setTab] = useState<'settle' | 'summary'>('settle')
   const [loadingId, setLoadingId] = useState<string | null>(null)
@@ -31,6 +32,7 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
   const handleToggle = async (s: Settlement) => {
     if (!user) return
     const confirmed = getConfirmed(s)
+    if (isSettled && confirmed) return
     const key = `${s.from.id}-${s.to.id}`
     setLoadingId(key)
     try {
@@ -114,8 +116,8 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                             {s.amount.toFixed(2)} SGD
                           </span>
                           {user && (
-                            <button onClick={() => handleToggle(s)} disabled={loadingId === key}
-                              className="ml-1 shrink-0 disabled:opacity-40 transition">
+                            <button onClick={() => handleToggle(s)} disabled={loadingId === key || (isSettled && confirmed)}
+                              className="ml-1 shrink-0 disabled:opacity-40 transition disabled:cursor-not-allowed">
                               {confirmed
                                 ? <CheckCircle size={18} className="text-green-500" />
                                 : <Circle size={18} className="text-gray-300 hover:text-green-400" />}

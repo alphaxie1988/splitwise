@@ -47,6 +47,7 @@ export default function SessionPage() {
   const [addingMember, setAddingMember] = useState(false)
 
   const [showPaidWarning, setShowPaidWarning] = useState(false)
+  const [removeMemberError, setRemoveMemberError] = useState<string | null>(null)
 
   // Undo delete state
   const [pendingDelete, setPendingDelete] = useState<{ expense: Expense; index: number } | null>(null)
@@ -215,7 +216,7 @@ export default function SessionPage() {
     if (!res.ok) {
       setData(snapshot)
       const json = await res.json()
-      alert(json.error ?? 'Could not remove member.')
+      setRemoveMemberError(json.error ?? 'Could not remove member.')
     }
   }
 
@@ -660,7 +661,7 @@ export default function SessionPage() {
       {showSettlement && (
         <SettlementModal
           sessionId={id} expenses={expenses} members={members} currencies={currencies}
-          confirmedSettlements={confirmedSettlements} user={user}
+          confirmedSettlements={confirmedSettlements} user={user} isSettled={session.is_settled}
           onClose={() => setShowSettlement(false)}
           onSettlementChange={() => { fetchData(); setAuditKey(k => k + 1) }} />
       )}
@@ -688,6 +689,20 @@ export default function SessionPage() {
                 Dismiss
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {removeMemberError && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Cannot Remove Member</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">{removeMemberError}</p>
+            <button
+              onClick={() => setRemoveMemberError(null)}
+              className="w-full text-sm border dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+              Dismiss
+            </button>
           </div>
         </div>
       )}
