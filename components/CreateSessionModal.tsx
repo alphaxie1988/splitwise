@@ -38,7 +38,7 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
     try {
       const res = await fetch(`/api/exchange-rate?from=${encodeURIComponent(code)}`)
       const data = await res.json()
-      const rate = data?.rates?.SGD
+      const rate = data?.quotes?.SGD
       if (rate) updateCurrency(i, 'rate', rate.toString())
       else setError(`Could not fetch rate for ${code}`)
     } catch {
