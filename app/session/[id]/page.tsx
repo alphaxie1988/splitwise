@@ -83,6 +83,12 @@ export default function SessionPage() {
       }).catch(() => {})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load session.')
+      // Remove stale session from localStorage if it no longer exists
+      const stored = JSON.parse(localStorage.getItem('recentSessions') ?? '[]')
+      localStorage.setItem('recentSessions', JSON.stringify(
+        stored.filter((s: { id: string }) => s.id !== id)
+      ))
+      localStorage.removeItem(`unlockedSession_${id}`)
     } finally {
       setLoading(false)
     }
