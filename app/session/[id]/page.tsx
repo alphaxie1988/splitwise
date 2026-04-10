@@ -318,19 +318,9 @@ export default function SessionPage() {
       ]
     })
 
-    const calculatedTotalRow = ['Total (calculated)', '', '', '', '', totalCostSGD, ...memberTotals]
+    const totalRow = ['Total', '', '', '', '', totalCostSGD, ...memberTotals]
 
-    const { balances } = calculateSettlement(expenses, members, currencies)
-    const settlementTotalRow = ['Total (settlement)', '', '', '', '', totalCostSGD, ...members.map(m => balances[m.id] ?? 0)]
-
-    const warningRows = [
-      [],
-      ['Note: "Total (calculated)" sums each expense row using simple division and may differ by a few'],
-      ['cents from "Total (settlement)" due to rounding (e.g. $10 split 3 ways = $3.33 + $3.33 + $3.34).'],
-      ['"Total (settlement)" matches the Summary page exactly and is the authoritative balance per person.'],
-    ]
-
-    const csv = [headers, ...dataRows, calculatedTotalRow, settlementTotalRow, ...warningRows]
+    const csv = [headers, ...dataRows, totalRow]
       .map(row => row.map(escapeCell).join(','))
       .join('\n')
 
