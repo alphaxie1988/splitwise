@@ -67,7 +67,7 @@ export default function InstallPWA() {
   // ── Android: native install prompt available ──────────────────────────────
   if (platform === 'android' && deferredPrompt) {
     return (
-      <div className="mt-4 rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 px-4 py-3.5 flex items-center justify-between gap-3">
+      <div className="mt-4 rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-gray-800 px-4 py-3.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
             <Download size={15} className="text-white" />
@@ -109,7 +109,7 @@ export default function InstallPWA() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowGuide(true)}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition"
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition"
             >
               How to
             </button>

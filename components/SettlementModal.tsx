@@ -106,7 +106,7 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                       const confirmed = isConfirmed(s)
                       const key = `${s.from.id}-${s.to.id}`
                       return (
-                        <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50'}`}>
+                        <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 dark:bg-gray-700/30 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50'}`}>
                           <span className={`text-sm font-medium dark:text-gray-300 ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.from.name}</span>
                           <span className="text-gray-400 text-sm">→</span>
                           <span className={`text-sm font-medium dark:text-gray-300 ${confirmed ? 'line-through text-gray-400' : ''}`}>{s.to.name}</span>

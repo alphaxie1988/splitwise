@@ -38,7 +38,7 @@ export default function PasscodeModal({ sessionId, onUnlocked }: Props) {
   return (
     <div className="fixed inset-0 bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
-        <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 bg-blue-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Lock size={22} className="text-blue-600" />
         </div>
         <h2 className="text-lg font-semibold dark:text-gray-100 mb-1">Session Protected</h2>

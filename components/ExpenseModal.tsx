@@ -153,7 +153,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
                 <button key={c.id} type="button" onClick={() => handleCategoryChange(c.id)}
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-xs transition ${
                     category === c.id
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-gray-700/50 text-blue-700 dark:text-blue-400 font-medium'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-500 dark:text-gray-400'
                   }`}>
                   <span className="text-lg leading-none">{c.emoji}</span>
