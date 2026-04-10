@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Users, Search } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Users, Search, Trash2, LogIn } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -21,7 +21,13 @@ export default function AdminPage() {
   const [sessions, setSessions] = useState<AdminSession[]>([])
   const [loading, setLoading] = useState(true)
   const [forbidden, setForbidden] = useState(false)
+  const [authLoading, setAuthLoading] = useState(false)
   const [search, setSearch] = useState('')
+  // Step 2: armed row (shows inline "Delete?" prompt)
+  const [armedId, setArmedId] = useState<string | null>(null)
+  // Step 3: final modal
+  const [modalSession, setModalSession] = useState<AdminSession | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -41,6 +47,26 @@ export default function AdminPage() {
         })
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSignIn = async () => {
+    setAuthLoading(true)
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/admin` },
+    })
+  }
+
+  const handleDelete = async () => {
+    if (!modalSession) return
+    setDeleting(true)
+    const res = await fetch(`/api/admin/sessions/${modalSession.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setSessions(prev => prev.filter(s => s.id !== modalSession.id))
+    }
+    setDeleting(false)
+    setModalSession(null)
+    setArmedId(null)
+  }
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-SG', {
@@ -64,9 +90,17 @@ export default function AdminPage() {
   if (forbidden) {
     return (
       <main className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-700 dark:text-gray-300 font-medium">Access denied.</p>
+        <p className="text-gray-700 dark:text-gray-300 font-medium">
+          {user ? 'Access denied.' : 'Sign in to access the admin panel.'}
+        </p>
+        {!user && (
+          <button onClick={handleSignIn} disabled={authLoading}
+            className="flex items-center gap-2 text-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg px-4 py-2 transition">
+            <LogIn size={14} /> {authLoading ? 'Signing in…' : 'Sign in with Google'}
+          </button>
+        )}
         <button onClick={() => router.push('/')}
-          className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+          className="text-sm text-gray-400 dark:text-gray-500 hover:underline">
           Go home
         </button>
       </main>
@@ -116,7 +150,7 @@ export default function AdminPage() {
           ) : (
             filtered.map(s => (
               <div key={s.id}
-                className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 flex items-center justify-between gap-3 group">
+                className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{s.name}</p>
                   <div className="flex items-center gap-3 mt-0.5">
@@ -127,15 +161,70 @@ export default function AdminPage() {
                     <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{formatDate(s.created_at)}</span>
                   </div>
                 </div>
-                <a href={`/session/${s.id}`} target="_blank" rel="noopener noreferrer"
-                  className="text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400 transition shrink-0">
-                  <ExternalLink size={15} />
-                </a>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Step 2 — armed: show inline confirm/cancel */}
+                  {armedId === s.id ? (
+                    <>
+                      <button onClick={() => setArmedId(null)}
+                        className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1">
+                        Cancel
+                      </button>
+                      <button onClick={() => { setModalSession(s); setArmedId(null) }}
+                        className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg px-3 py-1 transition">
+                        Delete?
+                      </button>
+                    </>
+                  ) : (
+                    /* Step 1 — idle trash icon */
+                    <button onClick={() => setArmedId(s.id)}
+                      title="Delete session"
+                      className="text-gray-300 dark:text-gray-600 hover:text-red-400 dark:hover:text-red-400 transition">
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+
+                  <a href={`/session/${s.id}`} target="_blank" rel="noopener noreferrer"
+                    className="text-gray-300 dark:text-gray-600 hover:text-blue-500 dark:hover:text-blue-400 transition">
+                    <ExternalLink size={15} />
+                  </a>
+                </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* Step 3 — final confirmation modal */}
+      {modalSession && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete session?</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              You are about to permanently delete:
+            </p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1 truncate">
+              {modalSession.name}
+            </p>
+            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 mb-5 truncate">
+              {modalSession.id}
+            </p>
+            <p className="text-sm text-red-500 font-medium mb-6">
+              This will delete all members, expenses, and settlements. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setModalSession(null)} disabled={deleting}
+                className="flex-1 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition disabled:opacity-50">
+                Cancel
+              </button>
+              <button onClick={handleDelete} disabled={deleting}
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition disabled:opacity-50">
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
