@@ -642,16 +642,18 @@ export default function SessionPage() {
                   </button>
                 </div>
               ))}
-              <div className="flex items-center gap-2 px-4 py-2.5">
-                <input type="text" value={newMemberName} onChange={e => setNewMemberName(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleAddMember() }}
-                  placeholder="New member name…"
-                  className="flex-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <button onClick={handleAddMember} disabled={addingMember || !newMemberName.trim()}
-                  className="flex items-center gap-1 text-sm text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
-                  <Plus size={13} /> {addingMember ? '…' : 'Add'}
-                </button>
-              </div>
+              {!session.is_settled && (
+                <div className="flex items-center gap-2 px-4 py-2.5">
+                  <input type="text" value={newMemberName} onChange={e => setNewMemberName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleAddMember() }}
+                    placeholder="New member name…"
+                    className="flex-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <button onClick={handleAddMember} disabled={addingMember || !newMemberName.trim()}
+                    className="flex items-center gap-1 text-sm text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
+                    <Plus size={13} /> {addingMember ? '…' : 'Add'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
