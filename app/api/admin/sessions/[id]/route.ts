@@ -15,6 +15,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const db = createServiceClient()
 
   // Delete tables without ON DELETE CASCADE before deleting the session
+  await db.from('settlements').delete().eq('session_id', id)
   await db.from('audit_logs').delete().eq('session_id', id)
   await db.from('user_sessions').delete().eq('session_id', id)
 
