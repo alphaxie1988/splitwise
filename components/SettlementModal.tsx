@@ -166,8 +166,8 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                   <div key={m.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium text-gray-800 dark:text-gray-100">{m.name}</span>
-                      <span className={`text-sm font-semibold ${effectiveBal > 0.005 ? 'text-green-600' : effectiveBal < -0.005 ? 'text-red-500' : 'text-gray-400'}`}>
-                        {effectiveBal > 0.005 ? 'gets back' : effectiveBal < -0.005 ? 'owes' : 'settled'} {Math.abs(effectiveBal) > 0.005 ? `${Math.abs(effectiveBal).toFixed(2)} SGD` : ''}
+                      <span className={`text-sm font-semibold ${effectiveBal > 0.01 ? 'text-green-600' : effectiveBal < -0.01 ? 'text-red-500' : 'text-gray-400'}`}>
+                        {effectiveBal > 0.01 ? 'gets back' : effectiveBal < -0.01 ? 'owes' : 'settled'} {Math.abs(effectiveBal) > 0.01 ? `${Math.abs(effectiveBal).toFixed(2)} SGD` : ''}
                       </span>
                     </div>
                     <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
