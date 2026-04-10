@@ -287,30 +287,22 @@ export default function SessionPage() {
     }
 
     const headers = ['Date', 'Description', 'Category', 'Cost', 'Currency', 'Cost in SGD', ...members.map(m => m.name)]
-    const memberTotals = new Array(members.length).fill(0)
     let totalCostSGD = 0
 
     const dataRows = expenses.map(expense => {
       const amountSGD = expense.amount * rateFor(expense.currency_code)
       const splitIds = new Set(expense.splits?.map(s => s.member_id) ?? members.map(m => m.id))
-      const sortedSplitIds = [...splitIds].sort()
-      const splitCount = sortedSplitIds.length
+      const splitCount = splitIds.size
+      const sharePerPerson = splitCount > 0 ? amountSGD / splitCount : 0
       totalCostSGD += amountSGD
 
-      // Use integer cents + floor/remainder to match calculateSettlement exactly
-      const totalCents = Math.round(amountSGD * 100)
-      const perPersonCents = splitCount > 0 ? Math.floor(totalCents / splitCount) : 0
-      const remainderCents = splitCount > 0 ? totalCents % splitCount : 0
-
-      const memberValues = members.map((m, i) => {
+      const memberValues = members.map(m => {
         const paid = expense.paid_by_member_id === m.id
-        const splitIndex = sortedSplitIds.indexOf(m.id)
-        const inSplit = splitIndex !== -1
-        let valCents = 0
-        if (paid) valCents += totalCents
-        if (inSplit) valCents -= perPersonCents + (splitIndex < remainderCents ? 1 : 0)
-        memberTotals[i] += valCents
-        return valCents !== 0 ? valCents / 100 : ''
+        const inSplit = splitIds.has(m.id)
+        let val = 0
+        if (paid) val += amountSGD
+        if (inSplit) val -= sharePerPerson
+        return val !== 0 ? val : ''
       })
 
       return [
@@ -324,7 +316,9 @@ export default function SessionPage() {
       ]
     })
 
-    const totalRow = ['Total', '', '', '', '', totalCostSGD, ...memberTotals.map(c => c / 100)]
+    // Use calculateSettlement balances for totals to guarantee they match the settlement page
+    const { balances } = calculateSettlement(expenses, members, currencies)
+    const totalRow = ['Total', '', '', '', '', totalCostSGD, ...members.map(m => balances[m.id] ?? 0)]
 
     const csv = [headers, ...dataRows, totalRow]
       .map(row => row.map(escapeCell).join(','))
