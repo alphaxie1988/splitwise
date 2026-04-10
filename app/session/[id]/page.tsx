@@ -452,7 +452,10 @@ export default function SessionPage() {
                     <>
                       {c.rate_to_sgd} SGD
                       {user && (
-                        <button onClick={() => { setEditingRateId(c.id); setRateInput(c.rate_to_sgd.toString()) }}
+                        <button onClick={() => {
+                          if (confirmedSettlements.length > 0) { setShowPaidWarning(true); return }
+                          setEditingRateId(c.id); setRateInput(c.rate_to_sgd.toString())
+                        }}
                           className="ml-1 text-gray-400 hover:text-blue-500" title="Edit rate">
                           <Pencil size={10} />
                         </button>
@@ -681,7 +684,7 @@ export default function SessionPage() {
       {showPaidWarning && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Cannot Add Expense</h3>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Action Not Allowed</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-5">
               One or more payments have already been marked as paid. Uncheck them in the Summary first.
             </p>
