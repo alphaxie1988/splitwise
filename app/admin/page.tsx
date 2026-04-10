@@ -28,6 +28,7 @@ export default function AdminPage() {
   // Step 3: final modal
   const [modalSession, setModalSession] = useState<AdminSession | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -59,13 +60,17 @@ export default function AdminPage() {
   const handleDelete = async () => {
     if (!modalSession) return
     setDeleting(true)
+    setDeleteError(null)
     const res = await fetch(`/api/admin/sessions/${modalSession.id}`, { method: 'DELETE' })
     if (res.ok) {
       setSessions(prev => prev.filter(s => s.id !== modalSession.id))
+      setModalSession(null)
+      setArmedId(null)
+    } else {
+      const data = await res.json()
+      setDeleteError(data.error ?? 'Delete failed')
     }
     setDeleting(false)
-    setModalSession(null)
-    setArmedId(null)
   }
 
   function formatDate(iso: string) {
@@ -213,7 +218,10 @@ export default function AdminPage() {
               This will delete all members, expenses, and settlements. This cannot be undone.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setModalSession(null)} disabled={deleting}
+              {deleteError && (
+              <p className="text-xs text-red-500 mb-4">{deleteError}</p>
+            )}
+            <button onClick={() => { setModalSession(null); setDeleteError(null) }} disabled={deleting}
                 className="flex-1 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition disabled:opacity-50">
                 Cancel
               </button>
