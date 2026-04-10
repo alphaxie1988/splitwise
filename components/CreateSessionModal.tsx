@@ -36,7 +36,7 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
     if (!code) return
     setFetchingRate(i)
     try {
-      const res = await fetch(`https://api.frankfurter.app/latest?from=${code}&to=SGD`)
+      const res = await fetch(`/api/exchange-rate?from=${encodeURIComponent(code)}`)
       const data = await res.json()
       const rate = data?.rates?.SGD
       if (rate) updateCurrency(i, 'rate', rate.toString())
