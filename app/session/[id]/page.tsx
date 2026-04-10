@@ -287,6 +287,7 @@ export default function SessionPage() {
     }
 
     const headers = ['Date', 'Description', 'Category', 'Cost', 'Currency', 'Cost in SGD', ...members.map(m => m.name)]
+    const memberTotals = new Array(members.length).fill(0)
     let totalCostSGD = 0
 
     const dataRows = expenses.map(expense => {
@@ -296,12 +297,13 @@ export default function SessionPage() {
       const sharePerPerson = splitCount > 0 ? amountSGD / splitCount : 0
       totalCostSGD += amountSGD
 
-      const memberValues = members.map(m => {
+      const memberValues = members.map((m, i) => {
         const paid = expense.paid_by_member_id === m.id
         const inSplit = splitIds.has(m.id)
         let val = 0
         if (paid) val += amountSGD
         if (inSplit) val -= sharePerPerson
+        memberTotals[i] += val
         return val !== 0 ? val : ''
       })
 
@@ -316,19 +318,19 @@ export default function SessionPage() {
       ]
     })
 
-    // Use calculateSettlement balances for totals to guarantee they match the settlement page
+    const calculatedTotalRow = ['Total (calculated)', '', '', '', '', totalCostSGD, ...memberTotals]
+
     const { balances } = calculateSettlement(expenses, members, currencies)
-    const totalRow = ['Total', '', '', '', '', totalCostSGD, ...members.map(m => balances[m.id] ?? 0)]
+    const settlementTotalRow = ['Total (settlement)', '', '', '', '', totalCostSGD, ...members.map(m => balances[m.id] ?? 0)]
 
     const warningRows = [
       [],
-      ['Note: Individual expense rows use simple division which may be a few cents off per row due to'],
-      ['rounding (e.g. $10 split 3 ways = $3.33 + $3.33 + $3.34). The Total row is taken directly from'],
-      ['the settlement calculation and matches the Summary page exactly. Use the Total row as the'],
-      ['authoritative balance for each person.'],
+      ['Note: "Total (calculated)" sums each expense row using simple division and may differ by a few'],
+      ['cents from "Total (settlement)" due to rounding (e.g. $10 split 3 ways = $3.33 + $3.33 + $3.34).'],
+      ['"Total (settlement)" matches the Summary page exactly and is the authoritative balance per person.'],
     ]
 
-    const csv = [headers, ...dataRows, totalRow, ...warningRows]
+    const csv = [headers, ...dataRows, calculatedTotalRow, settlementTotalRow, ...warningRows]
       .map(row => row.map(escapeCell).join(','))
       .join('\n')
 
