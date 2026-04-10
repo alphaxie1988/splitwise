@@ -14,9 +14,11 @@ const ACTION_STYLES: Record<string, string> = {
   UPDATE:         'text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30',
   DELETE:         'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30',
   RATE_CHANGE:    'text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30',
-  SETTLE:         'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30',
-  UNSETTLE:       'text-yellow-700 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30',
-  SESSION_UPDATE: 'text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30',
+  SETTLE:          'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30',
+  UNSETTLE:        'text-yellow-700 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30',
+  SESSION_UPDATE:  'text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/30',
+  PAYMENT_CHECK:   'text-teal-700 bg-teal-50 dark:text-teal-400 dark:bg-teal-900/30',
+  PAYMENT_UNCHECK: 'text-orange-700 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30',
 }
 
 function formatDate(iso: string) {
@@ -45,6 +47,8 @@ function describeLog(log: AuditLog): string {
     case 'SETTLE': return 'Marked session as settled'
     case 'UNSETTLE': return 'Reopened session'
     case 'SESSION_UPDATE': return `Renamed session: "${log.old_data?.name}" → "${log.new_data?.name}"`
+    case 'PAYMENT_CHECK': return `Marked payment: ${log.new_data?.from_member} → ${log.new_data?.to_member} (${Number(log.new_data?.amount).toFixed(2)} SGD)`
+    case 'PAYMENT_UNCHECK': return `Unmarked payment: ${log.old_data?.from_member} → ${log.old_data?.to_member} (${Number(log.old_data?.amount).toFixed(2)} SGD)`
     default: return `Changed "${d}"`
   }
 }

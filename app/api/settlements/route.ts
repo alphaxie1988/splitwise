@@ -20,6 +20,28 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) throw error
+
+    const { data: members } = await supabase
+      .from('session_members')
+      .select('id, name')
+      .in('id', [from_member_id, to_member_id])
+
+    const fromMember = members?.find((m: { id: string; name: string }) => m.id === from_member_id)
+    const toMember = members?.find((m: { id: string; name: string }) => m.id === to_member_id)
+
+    await supabase.from('audit_logs').insert({
+      session_id,
+      action: 'PAYMENT_CHECK',
+      changed_by_email: user.email,
+      new_data: {
+        from_member_id,
+        to_member_id,
+        from_member: fromMember?.name ?? from_member_id,
+        to_member: toMember?.name ?? to_member_id,
+        amount,
+      },
+    })
+
     return NextResponse.json({ settlement: data })
   } catch (err: unknown) {
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Error' }, { status: 500 })

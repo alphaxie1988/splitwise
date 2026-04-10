@@ -74,7 +74,7 @@ export interface AuditLog {
   id: string
   session_id: string
   expense_id: string | null
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'RATE_CHANGE' | 'SETTLE' | 'UNSETTLE' | 'SESSION_UPDATE'
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'RATE_CHANGE' | 'SETTLE' | 'UNSETTLE' | 'SESSION_UPDATE' | 'PAYMENT_CHECK' | 'PAYMENT_UNCHECK'
   changed_by_email: string | null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   old_data: any
