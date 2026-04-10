@@ -329,7 +329,8 @@ export default function SessionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Settled banner */}
+      {/* Sticky top: settled banner + header */}
+      <div className="sticky top-0 z-10">
       {session.is_settled && (
         <div className="bg-green-600 text-white text-center text-sm py-2 flex items-center justify-center gap-2">
           <CheckCircle size={15} /> This session is marked as settled
@@ -337,7 +338,7 @@ export default function SessionPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10">
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="max-w-2xl mx-auto px-4 py-4">
           {/* Row 1: back + buttons */}
           <div className="flex items-center justify-between gap-2 mb-1">
@@ -460,6 +461,7 @@ export default function SessionPage() {
           {user && <p className="text-xs text-green-600 mt-1">Editing as {user.email}</p>}
         </div>
       </header>
+      </div>
 
       {/* Main */}
       <main className="max-w-2xl mx-auto px-4 py-6">
