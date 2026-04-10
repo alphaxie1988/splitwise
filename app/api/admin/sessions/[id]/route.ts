@@ -14,6 +14,10 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const { id } = await params
   const db = createServiceClient()
 
+  // Delete tables without ON DELETE CASCADE before deleting the session
+  await db.from('audit_logs').delete().eq('session_id', id)
+  await db.from('user_sessions').delete().eq('session_id', id)
+
   const { error } = await db.from('sessions').delete().eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
