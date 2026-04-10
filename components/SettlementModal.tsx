@@ -110,11 +110,11 @@ export default function SettlementModal({ sessionId, expenses, members, currenci
                       const confirmed = isConfirmed(s)
                       const key = `${s.from.id}-${s.to.id}`
                       return (
-                        <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 dark:bg-gray-700/30 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-700/50'}`}>
-                          <span className="text-sm font-medium dark:text-gray-300">{s.from.name}</span>
-                          <span className="text-gray-400 text-sm">→</span>
-                          <span className="text-sm font-medium dark:text-gray-300">{s.to.name}</span>
-                          <span className={`ml-auto text-sm font-semibold tabular-nums ${confirmed ? 'text-gray-400' : 'text-blue-600'}`}>
+                        <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-2.5 transition ${confirmed ? 'bg-green-50 dark:bg-green-900/40 border border-green-200 dark:border-green-700' : 'bg-gray-50 dark:bg-gray-700/50'}`}>
+                          <span className={`text-sm font-medium ${confirmed ? 'line-through text-gray-400 dark:text-gray-500' : 'dark:text-gray-300'}`}>{s.from.name}</span>
+                          <span className={`text-sm ${confirmed ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400'}`}>→</span>
+                          <span className={`text-sm font-medium ${confirmed ? 'line-through text-gray-400 dark:text-gray-500' : 'dark:text-gray-300'}`}>{s.to.name}</span>
+                          <span className={`ml-auto text-sm font-semibold tabular-nums ${confirmed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-blue-600 dark:text-blue-400'}`}>
                             {s.amount.toFixed(2)} SGD
                           </span>
                           {user && (
