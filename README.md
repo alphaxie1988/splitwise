@@ -113,7 +113,7 @@ To set it up:
 1. Create a free account at [uptimerobot.com](https://uptimerobot.com)
 2. Add a new **HTTP(s)** monitor
 3. Set the URL to your deployed app (e.g. `https://your-app.vercel.app`)
-4. Set the monitoring interval to **5 minutes**
+4. Set the monitoring interval to **12 hours**
 
 ## Scripts
 
