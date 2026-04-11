@@ -64,7 +64,7 @@ create table audit_logs (
   id uuid primary key default gen_random_uuid(),
   session_id uuid references sessions(id) not null,
   expense_id uuid references expenses(id),
-  action text not null check (action in ('CREATE', 'UPDATE', 'DELETE', 'SESSION_UPDATE', 'SETTLE', 'UNSETTLE', 'PAYMENT_CHECK', 'PAYMENT_UNCHECK')),
+  action text not null check (action in ('CREATE', 'UPDATE', 'DELETE', 'SESSION_UPDATE', 'SETTLE', 'UNSETTLE', 'PAYMENT_CHECK', 'PAYMENT_UNCHECK', 'RATE_CHANGE')),
   changed_by_email text,
   old_data jsonb,
   new_data jsonb,
