@@ -81,6 +81,8 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 Run `supabase/schema.sql` in the Supabase SQL editor to create all tables, enable RLS, and set up public read policies.
 
+For subsequent schema changes, apply the relevant files from `supabase/migrations/` in the SQL editor.
+
 ### 4. Run locally
 
 ```bash
