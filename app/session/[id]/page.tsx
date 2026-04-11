@@ -515,16 +515,18 @@ export default function SessionPage() {
             Expenses ({(filterMemberId || searchQuery) ? `${visibleExpenses.length} of ${expenses.length}` : expenses.length})
           </h2>
           <div className="flex gap-2">
-            {user && (session.is_settled || allSettlementsConfirmed) && (
+            {user && (session.is_settled || (allSettlementsConfirmed && expenses.length > 0)) && (
               <button onClick={handleToggleSettle} disabled={settlingSession}
                 className={`flex items-center gap-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 transition disabled:opacity-50 ${session.is_settled ? 'border-green-400 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}>
                 {session.is_settled ? <><RotateCcw size={13} /> Reopen</> : <><CheckCircle size={13} /> Mark Settled</>}
               </button>
             )}
-            <button onClick={() => setShowSettlement(true)} disabled={expenses.length === 0}
-              className="flex items-center gap-1 text-sm border dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-1.5 hover:bg-white dark:hover:bg-gray-700 transition disabled:opacity-40">
-              <Calculator size={14} /> Summary
-            </button>
+            {expenses.length > 0 && (
+              <button onClick={() => setShowSettlement(true)}
+                className="flex items-center gap-1 text-sm border dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-1.5 hover:bg-white dark:hover:bg-gray-700 transition">
+                <Calculator size={14} /> Summary
+              </button>
+            )}
             {user && !session.is_settled && (
               <button
                 onClick={() => {
