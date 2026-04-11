@@ -7,6 +7,15 @@
   .dark { color-scheme: dark; }
 }
 
+.dot-grid-bg {
+  background-image: radial-gradient(circle, #dde2ea 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.dark .dot-grid-bg {
+  background-image: radial-gradient(circle, #222222 1px, transparent 1px);
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;

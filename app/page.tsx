@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Outfit } from 'next/font/google'
 import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ShieldCheck, Zap, Globe, Calculator, ScrollText, Share2, Smartphone } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import CreateSessionModal from '@/components/CreateSessionModal'
 import ThemeToggle from '@/components/ThemeToggle'
 import InstallPWA from '@/components/InstallPWA'
+
+const outfit = Outfit({ subsets: ['latin'], weight: ['700', '800'] })
 
 interface RecentSession {
   id: string
@@ -78,7 +81,6 @@ export default function Home() {
   const toggleArchive = async (e: React.MouseEvent, id: string, currentlyArchived: boolean) => {
     e.stopPropagation()
     if (user) {
-      // Optimistic update
       setRecentSessions(prev => prev.map(s => s.id === id ? { ...s, isArchived: !currentlyArchived } : s))
       await fetch('/api/user/sessions', {
         method: 'PATCH',
@@ -117,7 +119,7 @@ export default function Home() {
     return (
       <div
         onClick={() => router.push(`/session/${s.id}`)}
-        className="w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-between group cursor-pointer"
+        className="w-full bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700/40 rounded-xl px-4 py-3.5 text-left hover:bg-gray-100 dark:hover:bg-gray-900/60 hover:border-gray-200 dark:hover:border-gray-600 transition-all flex items-center justify-between group cursor-pointer"
       >
         <div className="min-w-0 flex-1">
           <p className={`font-medium truncate ${archived ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>{s.name}</p>
@@ -135,116 +137,132 @@ export default function Home() {
           >
             {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
           </button>
-          <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-400 transition" />
+          <ArrowRight size={14} className="text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition" />
         </div>
       </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-md mx-auto px-4 py-12">
+    <div className="min-h-screen dot-grid-bg bg-gray-50 dark:bg-[#111111]">
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-10">
-          <div className="flex items-center gap-3">
-            <img src="/icon.svg" alt="Splitwise" className="w-12 h-12 rounded-xl shadow-sm" />
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-1">Splitwise</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Split expenses with friends.</p>
-            </div>
+      {/* Sticky nav */}
+      <nav className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-[#111111]/90 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto px-5 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img src="/icon.svg" alt="Splitwise" className="w-7 h-7 rounded-lg" />
+            <span className="font-bold text-base tracking-tight text-gray-900 dark:text-white">Splitwise</span>
           </div>
-          <div className="pt-1 flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2">
-              <ThemeToggle className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" />
-              {user ? (
-                <button onClick={handleSignOut}
-                  className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                  <LogOut size={12} /> Sign Out
-                </button>
-              ) : (
-                <button onClick={handleSignIn} disabled={authLoading}
-                  className="flex items-center gap-1 text-xs text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
-                  <LogIn size={12} /> {authLoading ? '…' : 'Sign In'}
-                </button>
-              )}
-            </div>
-            {user && (
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[160px]">{user.email}</p>
-                {user.email === 'alphaxie1988@gmail.com' && (
-                  <button onClick={() => router.push('/admin')}
-                    title="Admin"
-                    className="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition">
-                    <ShieldCheck size={14} />
-                  </button>
-                )}
-              </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800" />
+            {user ? (
+              <button onClick={handleSignOut}
+                className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                <LogOut size={12} /> Sign Out
+              </button>
+            ) : (
+              <button onClick={handleSignIn} disabled={authLoading}
+                className="flex items-center gap-1 text-xs text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
+                <LogIn size={12} /> {authLoading ? '…' : 'Sign In'}
+              </button>
             )}
           </div>
         </div>
+      </nav>
 
-        {/* New session button */}
-        <button onClick={() => setShowModal(true)}
-          className="w-full flex items-center justify-between bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-4 transition shadow-sm">
-          <div className="flex items-center gap-3">
-            <Plus size={20} />
-            <div className="text-left">
-              <p className="font-semibold">New Session</p>
-              <p className="text-blue-200 text-xs">Create a group to track expenses</p>
-            </div>
-          </div>
-          <ArrowRight size={18} className="text-blue-300" />
-        </button>
+      {/* Hero */}
+      <section className="relative pt-16 pb-12 px-4 text-center overflow-hidden">
+        {/* Subtle radial glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[520px] h-[320px] bg-blue-400/8 dark:bg-blue-500/6 rounded-full blur-3xl" />
+        </div>
 
-        {/* Install PWA prompt */}
-        <InstallPWA />
+        <div className="relative">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-500/20 mb-5">
+            Free · No account required
+          </span>
 
-        <div className="mb-8" />
+          <h1 className={`${outfit.className} text-5xl sm:text-6xl font-extrabold tracking-tight leading-[1.08] text-gray-900 dark:text-white mb-4`}>
+            Split expenses,<br />
+            <span className="text-blue-600 dark:text-blue-400">not friendships.</span>
+          </h1>
 
-        {/* Active sessions */}
-        <div>
-          <h2 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <Clock size={12} /> Recent Sessions
-          </h2>
+          <p className="text-gray-500 dark:text-gray-400 text-[15px] max-w-xs mx-auto mb-8 leading-relaxed">
+            Track shared costs with anyone — trips, dinners, housemates. Settle up in seconds.
+          </p>
 
-          {sessionsLoading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl p-4 animate-pulse">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-                </div>
-              ))}
-            </div>
-          ) : activeSessions.length === 0 ? (
-            <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">No sessions yet. Create one above!</p>
-          ) : (
-            <div className="space-y-2">
-              {activeSessions.map(s => <SessionCard key={s.id} s={s} />)}
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl px-6 py-3 transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30">
+            <Plus size={16} strokeWidth={2.5} />
+            New Session
+          </button>
+
+          {user && (
+            <div className="mt-5 flex items-center justify-center gap-2">
+              <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]">{user.email}</p>
+              {user.email === 'alphaxie1988@gmail.com' && (
+                <button onClick={() => router.push('/admin')} title="Admin"
+                  className="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition">
+                  <ShieldCheck size={13} />
+                </button>
+              )}
             </div>
           )}
         </div>
+      </section>
 
-        {/* Archived sessions */}
-        {archivedSessions.length > 0 && (
-          <div className="mt-6">
-            <button
-              onClick={() => setShowArchived(v => !v)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3 hover:text-gray-500 dark:hover:text-gray-400 transition"
-            >
-              <span className="flex items-center gap-1.5"><Archive size={12} /> Archived ({archivedSessions.length})</span>
-              <ChevronDown size={13} className={`transition-transform duration-300 ${showArchived ? 'rotate-180' : ''}`} />
-            </button>
-            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showArchived ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-              <div className="overflow-hidden">
-                <div className="space-y-2 pb-1">
-                  {archivedSessions.map(s => <SessionCard key={s.id} s={s} />)}
+      {/* Session panel */}
+      <div className="max-w-md mx-auto px-4 pb-16">
+        <InstallPWA />
+
+        <div className="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/60 overflow-hidden">
+
+          {/* Recent sessions header */}
+          <div className="flex items-center gap-1.5 px-4 pt-4 pb-2.5 border-b border-gray-100 dark:border-gray-700/50">
+            <Clock size={11} className="text-gray-400 dark:text-gray-500" />
+            <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Recent Sessions</span>
+          </div>
+
+          <div className="p-3">
+            {sessionsLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-gray-50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-700/40 rounded-xl p-4 animate-pulse">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : activeSessions.length === 0 ? (
+              <p className="text-center text-gray-400 dark:text-gray-500 text-sm py-8">No sessions yet. Create one above!</p>
+            ) : (
+              <div className="space-y-2">
+                {activeSessions.map(s => <SessionCard key={s.id} s={s} />)}
+              </div>
+            )}
+          </div>
+
+          {/* Archived sessions */}
+          {archivedSessions.length > 0 && (
+            <div className="border-t border-gray-100 dark:border-gray-700/50 px-3 py-3">
+              <button
+                onClick={() => setShowArchived(v => !v)}
+                className="w-full flex items-center justify-between text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-1 mb-1 hover:text-gray-500 dark:hover:text-gray-400 transition"
+              >
+                <span className="flex items-center gap-1.5"><Archive size={11} /> Archived ({archivedSessions.length})</span>
+                <ChevronDown size={12} className={`transition-transform duration-300 ${showArchived ? 'rotate-180' : ''}`} />
+              </button>
+              <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showArchived ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                <div className="overflow-hidden">
+                  <div className="space-y-2 pt-2 pb-1">
+                    {archivedSessions.map(s => <SessionCard key={s.id} s={s} />)}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {showModal && (
@@ -259,7 +277,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 dark:text-blue-400 mb-3">Why Splitwise</p>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Split smarter, not harder</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Everything you need to split fairly</h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
               A lightweight, no-fuss tool to track shared expenses with friends, family, or colleagues — no account required.
             </p>
@@ -319,6 +337,6 @@ export default function Home() {
       </section>
 
       <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600 bg-white dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-700/60">v1.0.0</footer>
-    </main>
+    </div>
   )
 }
