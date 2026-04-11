@@ -501,7 +501,13 @@ export default function SessionPage() {
             </div>
           )}
 
-          {user && <p className={`text-xs mt-1 ${headerImage ? 'text-green-700 dark:text-green-300' : 'text-green-600'}`}>Editing as {user.email}</p>}
+          {user && (
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-black/10 text-gray-600 dark:bg-black/30 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
+                Editing as {user.email}
+              </span>
+            </div>
+          )}
         </div>
       </header>
       </div>
