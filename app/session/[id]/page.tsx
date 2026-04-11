@@ -383,20 +383,20 @@ export default function SessionPage() {
               <ArrowLeft size={12} /> Home
             </button>
             <div className="flex items-center gap-2">
-              <ThemeToggle className={headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'} />
+              <ThemeToggle className={headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'} />
               <button onClick={() => setShowShare(true)}
-                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}>
                 <Share2 size={12} />
                 <span className="hidden sm:inline">Share</span>
               </button>
               <button onClick={handleExportCSV} disabled={expenses.length === 0}
-                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}
                 title="Export to CSV">
                 <Download size={12} />
               </button>
               {user ? (
                 <button onClick={() => supabase.auth.signOut()}
-                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`
                   title={user.email ?? ''}>
                   <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
                 </button>
@@ -444,7 +444,7 @@ export default function SessionPage() {
                     ? 'bg-blue-600 text-white border-blue-600'
                     : headerImage
                       ? 'border-gray-400/60 text-gray-700 hover:border-gray-600 dark:border-white/40 dark:text-white/80 dark:hover:border-white/70'
-                      : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 hover:border-gray-500 dark:hover:border-gray-500'
+                      : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 bg-gray-100 hover:bg-gray-200 hover:border-gray-500 dark:bg-gray-700/50 dark:hover:border-gray-500'
                 }`}>
                 All
               </button>
@@ -457,7 +457,7 @@ export default function SessionPage() {
                     ? 'bg-blue-600 text-white border-blue-600'
                     : headerImage
                       ? 'border-gray-400/60 text-gray-700 hover:border-gray-600 dark:border-white/40 dark:text-white/80 dark:hover:border-white/70'
-                      : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 hover:border-gray-500 dark:hover:border-gray-500'
+                      : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 bg-gray-100 hover:bg-gray-200 hover:border-gray-500 dark:bg-gray-700/50 dark:hover:border-gray-500'
                 }`}>
                 {m.name}
               </button>
