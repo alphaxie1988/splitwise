@@ -95,6 +95,8 @@ export async function DELETE(
       .update({ is_deleted: true, updated_at: new Date().toISOString() })
       .eq('id', params.id)
 
+    await supabase.from('expense_splits').delete().eq('expense_id', params.id)
+
     if (oldExpense) {
       await supabase.from('audit_logs').insert({
         session_id: oldExpense.session_id,
