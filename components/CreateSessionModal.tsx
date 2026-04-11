@@ -14,7 +14,8 @@ interface CurrencyEntry {
   name: string
 }
 
-const INPUT = 'w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+const INPUT = 'w-full border border-gray-200 dark:border-gray-600/80 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition'
+const LABEL = 'block text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5'
 
 export default function CreateSessionModal({ onClose, onCreated }: Props) {
   const [name, setName] = useState('')
@@ -116,53 +117,67 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-gray-100">Create New Session</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={18} /></button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800/95 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/50 w-full max-w-md max-h-[90vh] overflow-y-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700/60">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">New Session</h2>
+          <button onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg p-1 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition">
+            <X size={16} />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-5">
+
+          {/* Session name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Session Name</label>
+            <label className={LABEL}>Session Name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="e.g. Bangkok Trip" className={INPUT} />
           </div>
 
+          {/* Members */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Members</label>
+            <label className={LABEL}>Members</label>
             <div className="space-y-2">
               {members.map((m, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  <input type="text" value={m} onChange={e => updateMember(i, e.target.value)}
-                    placeholder={`Member ${i + 1}`} className={INPUT} />
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-xs font-mono text-gray-300 dark:text-gray-600 w-4 shrink-0 text-right">{i + 1}</span>
+                    <input type="text" value={m} onChange={e => updateMember(i, e.target.value)}
+                      placeholder={`Member ${i + 1}`} className={INPUT} />
+                  </div>
                   {members.length > 2 && (
-                    <button type="button" onClick={() => removeMember(i)} className="text-red-400 hover:text-red-600 shrink-0">
-                      <Trash2 size={15} />
+                    <button type="button" onClick={() => removeMember(i)}
+                      className="text-gray-300 dark:text-gray-600 hover:text-red-400 transition shrink-0">
+                      <Trash2 size={14} />
                     </button>
                   )}
                 </div>
               ))}
             </div>
             <button type="button" onClick={addMember}
-              className="mt-2 text-sm text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 flex items-center gap-1">
-              <Plus size={14} /> Add member
+              className="mt-2.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition">
+              <Plus size={13} /> Add member
             </button>
           </div>
 
+          {/* Foreign Currencies */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Foreign Currencies <span className="text-gray-400 font-normal ml-1 text-xs">(SGD is always included)</span>
+            <label className={LABEL}>
+              Foreign Currencies
+              <span className="normal-case font-normal text-gray-400 ml-1">(SGD always included)</span>
             </label>
             <div className="space-y-3">
               {currencies.map((c, i) => {
                 const suggestions = getSuggestions(c.code)
                 return (
-                  <div key={i}>
+                  <div key={i} className="rounded-xl border border-gray-100 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-700/20 p-3">
                     <div className="flex gap-2 items-center">
                       {/* Type-ahead code input */}
-                      <div className="relative shrink-0 w-24">
+                      <div className="relative shrink-0 w-20">
                         <input
                           type="text"
                           value={c.code}
@@ -177,23 +192,23 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
                           }, 150)}
                           placeholder="USD"
                           maxLength={5}
-                          className="w-full border dark:border-gray-600 rounded-lg px-2 py-2 text-sm uppercase text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full border border-gray-200 dark:border-gray-600/80 rounded-xl px-2 py-2 text-sm font-mono uppercase text-center bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                         />
                         {activeDropdown === i && suggestions.length > 0 && (
                           <ul
                             onMouseEnter={() => { dropdownRef.current = i }}
                             onMouseLeave={() => { dropdownRef.current = null }}
-                            className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg z-30 max-h-44 overflow-y-auto"
+                            className="absolute top-full left-0 mt-1 w-60 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-30 max-h-44 overflow-y-auto"
                           >
                             {suggestions.map(([code, label]) => (
                               <li key={code}>
                                 <button
                                   type="button"
                                   onMouseDown={() => handleSelectCurrency(i, code, label)}
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2"
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2.5 transition"
                                 >
                                   <span className="font-mono font-semibold text-gray-900 dark:text-gray-100 w-10 shrink-0">{code}</span>
-                                  <span className="text-gray-500 dark:text-gray-400 truncate">{label}</span>
+                                  <span className="text-gray-400 dark:text-gray-500 truncate text-xs">{label}</span>
                                 </button>
                               </li>
                             ))}
@@ -201,48 +216,56 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
                         )}
                       </div>
 
-                      <span className="text-gray-400 text-xs shrink-0">1 =</span>
+                      <span className="text-gray-300 dark:text-gray-600 text-xs shrink-0">=</span>
                       <input type="number" value={c.rate} onChange={e => updateCurrency(i, { rate: e.target.value })}
-                        placeholder="1.35" step="any" min="0.000001" className={INPUT} />
-                      <span className="text-gray-400 text-xs shrink-0">SGD</span>
-                      <button type="button" onClick={() => fetchLiveRate(i)} disabled={fetchingRate === i || !c.code.trim()}
-                        title="Fetch live rate" className="text-blue-400 hover:text-blue-600 disabled:opacity-40 shrink-0">
-                        <RefreshCw size={14} className={fetchingRate === i ? 'animate-spin' : ''} />
+                        placeholder="1.35" step="any" min="0.000001"
+                        className="flex-1 border border-gray-200 dark:border-gray-600/80 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                      <span className="text-gray-400 dark:text-gray-500 text-xs shrink-0">SGD</span>
+                      <button type="button" onClick={() => fetchLiveRate(i)}
+                        disabled={fetchingRate === i || !c.code.trim()}
+                        title="Fetch live rate"
+                        className="text-blue-400 hover:text-blue-500 disabled:opacity-30 shrink-0 transition">
+                        <RefreshCw size={13} className={fetchingRate === i ? 'animate-spin' : ''} />
                       </button>
-                      <button type="button" onClick={() => removeCurrency(i)} className="text-red-400 hover:text-red-600 shrink-0">
-                        <Trash2 size={15} />
+                      <button type="button" onClick={() => removeCurrency(i)}
+                        className="text-gray-300 dark:text-gray-600 hover:text-red-400 shrink-0 transition">
+                        <Trash2 size={14} />
                       </button>
                     </div>
-
-                    {/* Currency name label */}
                     {c.name && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 pl-1">
-                        {c.code} — {c.name}
-                      </p>
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-2">{c.code} — {c.name}</p>
                     )}
                   </div>
                 )
               })}
             </div>
             <button type="button" onClick={addCurrency}
-              className="mt-2 text-sm text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 flex items-center gap-1">
-              <Plus size={14} /> Add currency
+              className="mt-2.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 transition">
+              <Plus size={13} /> Add currency
             </button>
           </div>
 
+          {/* Passcode */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-1">
-              <Lock size={13} /> Passcode <span className="text-gray-400 font-normal ml-1 text-xs">(optional)</span>
+            <label className={`${LABEL} flex items-center gap-1`}>
+              <Lock size={11} /> Passcode
+              <span className="normal-case font-normal text-gray-400 ml-1">(optional)</span>
             </label>
             <input type="text" value={passcode} onChange={e => setPasscode(e.target.value)}
               placeholder="e.g. 1234" className={INPUT} />
-            <p className="text-xs text-gray-400 mt-1">If set, visitors must enter this to view the session.</p>
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1.5">Visitors must enter this to view the session.</p>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-3.5 py-2.5">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
 
+          {/* Submit */}
           <button type="submit" disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition">
+            className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white py-3 rounded-xl text-sm font-semibold disabled:opacity-50 transition-all shadow-sm shadow-blue-500/20">
             {loading ? 'Creating…' : 'Create Session'}
           </button>
         </form>

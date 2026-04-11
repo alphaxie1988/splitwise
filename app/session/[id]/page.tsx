@@ -255,19 +255,17 @@ export default function SessionPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
-        <div className="text-center max-w-sm w-full">
-          <div className="flex justify-center mb-6">
-            <img src="/icon.svg" alt="Splitwise" className="w-16 h-16 rounded-2xl shadow-md opacity-40" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Session not found</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-8">
+      <div className="min-h-screen dot-grid-bg bg-gray-50 dark:bg-[#111111] flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-gray-800/80 rounded-2xl border border-gray-200 dark:border-gray-700/60 shadow-sm p-10 text-center max-w-sm w-full">
+          <img src="/icon.svg" alt="Splitwise" className="w-12 h-12 rounded-xl mx-auto mb-5 opacity-30 dark:opacity-20" />
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Session not found</h1>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mb-7 leading-relaxed">
             {error && error !== 'Session not found.'
               ? error
-              : "This session may have been deleted or the link is invalid."}
+              : 'This session may have been deleted or the link is invalid.'}
           </p>
           <a href="/"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition">
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm shadow-blue-500/20">
             <ArrowLeft size={14} /> Back to Home
           </a>
         </div>

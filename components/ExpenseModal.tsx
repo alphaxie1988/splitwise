@@ -14,7 +14,8 @@ interface Props {
   onSaved: () => void
 }
 
-const INPUT = 'w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500'
+const INPUT = 'w-full border border-gray-200 dark:border-gray-600/80 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition'
+const LABEL = 'block text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5'
 
 export default function ExpenseModal({ sessionId, members, currencies, expense, onClose, onSaved }: Props) {
   const [description, setDescription] = useState(expense?.description ?? '')
@@ -54,13 +55,11 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // #18 Recently used currencies
   const [recentCurrencies] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('recentCurrencies') ?? '[]') } catch { return [] }
   })
 
   const allCurrencies = ['SGD', ...currencies.map(c => c.currency_code)]
-
   const isTransfer = category === 'transfer'
 
   const handleCategoryChange = (id: CategoryId) => {
@@ -116,7 +115,6 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to save expense.')
       localStorage.setItem(`lastPaidBy_${sessionId}`, paidBy)
-      // Save recently used currency (#18)
       if (currency !== 'SGD') {
         const recent = [currency, ...recentCurrencies.filter(c => c !== currency)].slice(0, 3)
         localStorage.setItem('recentCurrencies', JSON.stringify(recent))
@@ -129,48 +127,57 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
     }
   }
 
+  const title = expense ? 'Edit Expense' : isTransfer ? 'Add Transfer' : 'Add Expense'
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-gray-100">{expense ? 'Edit Expense' : isTransfer ? 'Add Transfer' : 'Add Expense'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-            <X size={18} />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800/95 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/50 w-full max-w-md max-h-[90vh] overflow-y-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700/60">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h2>
+          <button onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg p-1 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition">
+            <X size={16} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-4">
+
+          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
+            <label className={LABEL}>Description</label>
             <input type="text" value={description} onChange={e => setDescription(e.target.value)}
               placeholder="e.g. Dinner at Maxwell" className={INPUT} />
           </div>
 
+          {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Category</label>
+            <label className={LABEL}>Category</label>
             <div className="grid grid-cols-5 gap-1.5">
               {CATEGORIES.map(c => (
                 <button key={c.id} type="button" onClick={() => handleCategoryChange(c.id)}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-xs transition ${
+                  className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border text-xs transition-all ${
                     category === c.id
-                      ? 'border-blue-500 bg-blue-50 dark:bg-gray-700/50 text-blue-700 dark:text-blue-400 font-medium'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-500 dark:text-gray-400'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 font-medium shadow-sm'
+                      : 'border-gray-100 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-700/20 hover:border-gray-200 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400'
                   }`}>
-                  <span className="text-lg leading-none">{c.emoji}</span>
-                  <span className="truncate w-full text-center">{c.label}</span>
+                  <span className="text-xl leading-none">{c.emoji}</span>
+                  <span className="truncate w-full text-center text-[10px]">{c.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Amount + Currency */}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Amount</label>
+              <label className={LABEL}>Amount</label>
               <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
                 placeholder="0.00" step="any" min="0" className={INPUT} />
             </div>
             <div className="w-28">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Currency</label>
+              <label className={LABEL}>Currency</label>
               <select value={currency} onChange={e => setCurrency(e.target.value)} className={INPUT}>
                 {allCurrencies.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -178,33 +185,37 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
           </div>
 
           {amountInSGD && currency !== 'SGD' && (
-            <p className="text-xs text-gray-400 dark:text-gray-500">≈ {amountInSGD} SGD at session rate</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 -mt-1">≈ {amountInSGD} SGD at session rate</p>
           )}
 
+          {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Date</label>
+            <label className={LABEL}>Date</label>
             <input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} className={INPUT} />
           </div>
 
+          {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Notes <span className="text-gray-400 font-normal text-xs">(optional)</span>
+            <label className={LABEL}>
+              Notes <span className="normal-case font-normal text-gray-400 ml-1">(optional)</span>
             </label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
-              placeholder="e.g. receipt #1234, split 3 ways..." rows={2}
+              placeholder="e.g. receipt #1234, split 3 ways…" rows={2}
               className={`${INPUT} resize-none`} />
           </div>
 
+          {/* Paid by */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Paid by</label>
+            <label className={LABEL}>Paid by</label>
             <select value={paidBy} onChange={e => handlePaidByChange(e.target.value)} className={INPUT}>
               {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
 
+          {/* Transfer to / Split among */}
           {isTransfer ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Transfer to</label>
+              <label className={LABEL}>Transfer to</label>
               <select value={transferTo} onChange={e => setTransferTo(e.target.value)} className={INPUT}>
                 {members.filter(m => m.id !== paidBy).map(m => (
                   <option key={m.id} value={m.id}>{m.name}</option>
@@ -213,25 +224,41 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Split among <span className="text-gray-400 font-normal ml-1 text-xs">(equal split)</span>
+              <label className={LABEL}>
+                Split among <span className="normal-case font-normal text-gray-400 ml-1">(equal split)</span>
               </label>
-              <div className="grid grid-cols-2 gap-1.5">
-                {members.map(m => (
-                  <label key={m.id} className="flex items-center gap-2 cursor-pointer select-none">
-                    <input type="checkbox" checked={splitIds.includes(m.id)} onChange={() => toggleSplit(m.id)}
-                      className="rounded border-gray-300 dark:border-gray-600" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{m.name}</span>
-                  </label>
-                ))}
+              <div className="flex flex-wrap gap-2">
+                {members.map(m => {
+                  const checked = splitIds.includes(m.id)
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => toggleSplit(m.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        checked
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                          : 'bg-gray-50 dark:bg-gray-700/40 border-gray-200 dark:border-gray-600/60 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
+                      }`}
+                    >
+                      {m.name}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-3.5 py-2.5">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
 
+          {/* Submit */}
           <button type="submit" disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition">
+            className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white py-3 rounded-xl text-sm font-semibold disabled:opacity-50 transition-all shadow-sm shadow-blue-500/20">
             {loading ? 'Saving…' : expense ? 'Save Changes' : isTransfer ? 'Add Transfer' : 'Add Expense'}
           </button>
         </form>
