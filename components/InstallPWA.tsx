@@ -39,6 +39,13 @@ export default function InstallPWA() {
       setPlatform('android')
     }
 
+    // Pick up the prompt if it fired before this component mounted
+    const early = (window as any).__pwaPrompt as BeforeInstallPromptEvent | undefined
+    if (early) {
+      setDeferredPrompt(early)
+      setPlatform('android')
+    }
+
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
