@@ -379,7 +379,7 @@ export default function SessionPage() {
           {/* Row 1: back + buttons */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <button onClick={() => router.push('/')}
-              className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-gray-600 hover:text-gray-900 dark:text-white/80 dark:hover:text-white' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}>
+              className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-gray-600 hover:text-gray-900 dark:text-white/80 dark:hover:text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'}`}>
               <ArrowLeft size={12} /> Home
             </button>
             <div className="flex items-center gap-2">
@@ -420,14 +420,14 @@ export default function SessionPage() {
                 className="text-xs text-blue-300 font-medium disabled:opacity-50 shrink-0">
                 {savingName ? '…' : 'Save'}
               </button>
-              <button onClick={() => setEditingName(false)} className={`text-xs shrink-0 ${headerImage ? 'text-gray-500 dark:text-white/60' : 'text-gray-400'}`}>Cancel</button>
+              <button onClick={() => setEditingName(false)} className={`text-xs shrink-0 ${headerImage ? 'text-gray-500 dark:text-white/60' : 'text-gray-500'}`}>Cancel</button>
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
               <h1 className={`text-xl font-bold ${headerImage ? 'text-gray-900 drop-shadow dark:text-white' : 'dark:text-gray-100'}`}>{session.name}</h1>
               {user && (
                 <button onClick={() => { setNameInput(session.name); setEditingName(true) }}
-                  className={`shrink-0 ${headerImage ? 'text-gray-500 hover:text-gray-800 dark:text-white/60 dark:hover:text-white' : 'text-gray-400 hover:text-blue-500'}`}>
+                  className={`shrink-0 ${headerImage ? 'text-gray-500 hover:text-gray-800 dark:text-white/60 dark:hover:text-white' : 'text-gray-500 hover:text-blue-500'}`}>
                   <Pencil size={13} />
                 </button>
               )}
@@ -490,7 +490,7 @@ export default function SessionPage() {
                           if (confirmedSettlements.length > 0) { setShowPaidWarning(true); return }
                           setEditingRateId(c.id); setRateInput(c.rate_to_sgd.toString())
                         }}
-                          className={`ml-1 ${headerImage ? 'text-gray-400 hover:text-gray-700 dark:text-white/50 dark:hover:text-white' : 'text-gray-400 hover:text-blue-500'}`} title="Edit rate">
+                          className={`ml-1 ${headerImage ? 'text-gray-400 hover:text-gray-700 dark:text-white/50 dark:hover:text-white' : 'text-gray-500 hover:text-blue-500'}`} title="Edit rate">
                           <Pencil size={10} />
                         </button>
                       )}
