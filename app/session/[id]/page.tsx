@@ -377,35 +377,42 @@ export default function SessionPage() {
 
         <div className={`relative z-10 max-w-2xl mx-auto px-4 py-4 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}>
           {/* Row 1: back + buttons */}
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-start justify-between gap-2 mb-1">
             <button onClick={() => router.push('/')}
               className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-gray-600 hover:text-gray-900 dark:text-white/80 dark:hover:text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'}`}>
               <ArrowLeft size={12} /> Home
             </button>
-            <div className="flex items-center gap-2">
-              <ThemeToggle className={headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'} />
-              <button onClick={() => setShowShare(true)}
-                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}>
-                <Share2 size={12} />
-                <span className="hidden sm:inline">Share</span>
-              </button>
-              <button onClick={handleExportCSV} disabled={expenses.length === 0}
-                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}
-                title="Export to CSV">
-                <Download size={12} />
-              </button>
-              {user ? (
-                <button onClick={() => supabase.auth.signOut()}
-                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}
-                  title={user.email ?? ''}>
-                  <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <ThemeToggle className={headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'} />
+                <button onClick={() => setShowShare(true)}
+                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}>
+                  <Share2 size={12} />
+                  <span className="hidden sm:inline">Share</span>
                 </button>
-              ) : (
-                <button onClick={handleSignIn} disabled={authLoading}
-                  className="flex items-center gap-1 text-xs text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
-                  <LogIn size={12} />
-                  <span>Sign In to Edit</span>
+                <button onClick={handleExportCSV} disabled={expenses.length === 0}
+                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}
+                  title="Export to CSV">
+                  <Download size={12} />
                 </button>
+                {user ? (
+                  <button onClick={() => supabase.auth.signOut()}
+                    className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-600 border-gray-300 bg-gray-100 hover:bg-gray-200 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}
+                    title={user.email ?? ''}>
+                    <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
+                  </button>
+                ) : (
+                  <button onClick={handleSignIn} disabled={authLoading}
+                    className="flex items-center gap-1 text-xs text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700 disabled:opacity-50 transition">
+                    <LogIn size={12} />
+                    <span>Sign In to Edit</span>
+                  </button>
+                )}
+              </div>
+              {user && (
+                <span className={`text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-white/50 text-gray-600 dark:bg-black/30 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
+                  Editing as {user.email}
+                </span>
               )}
             </div>
           </div>
@@ -501,13 +508,6 @@ export default function SessionPage() {
             </div>
           )}
 
-          {user && (
-            <div className="flex justify-end mt-1">
-              <span className={`text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-white/50 text-gray-600 dark:bg-black/30 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
-                Editing as {user.email}
-              </span>
-            </div>
-          )}
         </div>
       </header>
       </div>
