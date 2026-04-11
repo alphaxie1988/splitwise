@@ -12,16 +12,16 @@ export function formatAmount(amount: number, currencyCode: string): string {
 }
 
 export const CATEGORIES = [
-  { id: 'meal',          label: 'Meal',          emoji: '🍽️' },
-  { id: 'drink',         label: 'Drink',         emoji: '🍹' },
-  { id: 'entertainment', label: 'Entertainment', emoji: '🎉' },
-  { id: 'hotel',         label: 'Hotel',         emoji: '🏨' },
-  { id: 'taxi',          label: 'Taxi',          emoji: '🚕' },
-  { id: 'flight',        label: 'Flight',        emoji: '✈️' },
-  { id: 'train',         label: 'Train',         emoji: '🚆' },
-  { id: 'shopping',      label: 'Shopping',      emoji: '🛍️' },
-  { id: 'transfer',      label: 'Transfer',      emoji: '💸' },
-  { id: 'misc',          label: 'Misc',          emoji: '📦' },
+  { id: 'meal',          label: 'Meal'          },
+  { id: 'drink',         label: 'Drink'         },
+  { id: 'entertainment', label: 'Entertainment' },
+  { id: 'hotel',         label: 'Hotel'         },
+  { id: 'taxi',          label: 'Taxi'          },
+  { id: 'flight',        label: 'Flight'        },
+  { id: 'train',         label: 'Train'         },
+  { id: 'shopping',      label: 'Shopping'      },
+  { id: 'transfer',      label: 'Transfer'      },
+  { id: 'misc',          label: 'Misc'          },
 ] as const
 
 export type CategoryId = typeof CATEGORIES[number]['id']

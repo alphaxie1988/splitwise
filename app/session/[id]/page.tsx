@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
 import { CATEGORIES, formatAmount } from '@/lib/types'
+import { CategoryIcon } from '@/lib/category-icons'
 import { calculateSettlement } from '@/lib/settlement'
 import ExpenseModal from '@/components/ExpenseModal'
 import SettlementModal from '@/components/SettlementModal'
@@ -616,12 +617,13 @@ export default function SessionPage() {
                         const splitAll = splitIds.length === members.length && members.every(m => splitIds.includes(m.id))
                         const splitNames = splitAll ? 'All' : expense.splits?.map(s => s.member?.name ?? '').filter(Boolean).join(', ')
                         const amountSGD = expense.amount * rateFor(expense.currency_code)
-                        const categoryEmoji = CATEGORIES.find(c => c.id === expense.category)?.emoji ?? '📦'
                         return (
                           <div key={expense.id}
                             className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 ${exitingId === expense.id ? 'expense-exit' : 'expense-enter'}`}>
                             <div className="flex items-start gap-3">
-                              <div className="text-2xl leading-none pt-0.5 shrink-0">{categoryEmoji}</div>
+                              <div className="text-gray-400 dark:text-gray-500 pt-0.5 shrink-0">
+                                <CategoryIcon id={expense.category} size={20} />
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{expense.description}</p>
                                 <div className="flex items-baseline gap-2 mt-0.5">

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Expense, SessionMember, SessionCurrency, CategoryId } from '@/lib/types'
 import { CATEGORIES } from '@/lib/types'
+import { CategoryIcon } from '@/lib/category-icons'
 
 interface Props {
   sessionId: string
@@ -162,7 +163,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-400 font-medium shadow-sm'
                       : 'border-gray-100 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-700/20 hover:border-gray-200 dark:hover:border-gray-600 text-gray-500 dark:text-gray-400'
                   }`}>
-                  <span className="text-xl leading-none">{c.emoji}</span>
+                  <CategoryIcon id={c.id} size={18} />
                   <span className="truncate w-full text-center text-[10px]">{c.label}</span>
                 </button>
               ))}
