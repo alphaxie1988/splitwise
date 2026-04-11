@@ -370,33 +370,33 @@ export default function SessionPage() {
           backgroundPosition: 'center',
         } : undefined}
       >
-        {/* Dark overlay when city photo is active */}
+        {/* Overlay when city photo is active — white-wash in light mode, dark in dark mode */}
         {headerImage && (
-          <div className="absolute inset-0 bg-black/55 pointer-events-none" />
+          <div className="absolute inset-0 bg-white/70 dark:bg-black/55 pointer-events-none" />
         )}
 
         <div className={`relative z-10 max-w-2xl mx-auto px-4 py-4 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}>
           {/* Row 1: back + buttons */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <button onClick={() => router.push('/')}
-              className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}>
+              className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-gray-600 hover:text-gray-900 dark:text-white/80 dark:hover:text-white' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}>
               <ArrowLeft size={12} /> Home
             </button>
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <button onClick={() => setShowShare(true)}
-                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-white border-white/40 hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 <Share2 size={12} />
                 <span className="hidden sm:inline">Share</span>
               </button>
               <button onClick={handleExportCSV} disabled={expenses.length === 0}
-                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-white border-white/40 hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 title="Export to CSV">
                 <Download size={12} />
               </button>
               {user ? (
                 <button onClick={() => supabase.auth.signOut()}
-                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-white border-white/40 hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                   title={user.email ?? ''}>
                   <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
                 </button>
@@ -415,19 +415,19 @@ export default function SessionPage() {
             <div className="flex items-center gap-2">
               <input autoFocus value={nameInput} onChange={e => setNameInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
-                className="text-xl font-bold border-b-2 border-blue-400 bg-transparent text-white focus:outline-none flex-1 min-w-0" />
+                className="text-xl font-bold border-b-2 border-blue-400 bg-transparent text-gray-900 dark:text-white focus:outline-none flex-1 min-w-0" />
               <button onClick={handleSaveName} disabled={savingName}
                 className="text-xs text-blue-300 font-medium disabled:opacity-50 shrink-0">
                 {savingName ? '…' : 'Save'}
               </button>
-              <button onClick={() => setEditingName(false)} className={`text-xs shrink-0 ${headerImage ? 'text-white/60' : 'text-gray-400'}`}>Cancel</button>
+              <button onClick={() => setEditingName(false)} className={`text-xs shrink-0 ${headerImage ? 'text-gray-500 dark:text-white/60' : 'text-gray-400'}`}>Cancel</button>
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
-              <h1 className={`text-xl font-bold ${headerImage ? 'text-white drop-shadow' : 'dark:text-gray-100'}`}>{session.name}</h1>
+              <h1 className={`text-xl font-bold ${headerImage ? 'text-gray-900 drop-shadow dark:text-white' : 'dark:text-gray-100'}`}>{session.name}</h1>
               {user && (
                 <button onClick={() => { setNameInput(session.name); setEditingName(true) }}
-                  className={`shrink-0 ${headerImage ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-blue-500'}`}>
+                  className={`shrink-0 ${headerImage ? 'text-gray-500 hover:text-gray-800 dark:text-white/60 dark:hover:text-white' : 'text-gray-400 hover:text-blue-500'}`}>
                   <Pencil size={13} />
                 </button>
               )}
@@ -443,7 +443,7 @@ export default function SessionPage() {
                   !filterMemberId
                     ? 'bg-blue-600 text-white border-blue-600'
                     : headerImage
-                      ? 'border-white/40 text-white/80 hover:border-white/70'
+                      ? 'border-gray-400/60 text-gray-700 hover:border-gray-600 dark:border-white/40 dark:text-white/80 dark:hover:border-white/70'
                       : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}>
                 All
@@ -456,7 +456,7 @@ export default function SessionPage() {
                   filterMemberId === m.id
                     ? 'bg-blue-600 text-white border-blue-600'
                     : headerImage
-                      ? 'border-white/40 text-white/80 hover:border-white/70'
+                      ? 'border-gray-400/60 text-gray-700 hover:border-gray-600 dark:border-white/40 dark:text-white/80 dark:hover:border-white/70'
                       : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}>
                 {m.name}
@@ -468,7 +468,7 @@ export default function SessionPage() {
           {currencies.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {currencies.map(c => (
-                <span key={c.id} className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-black/30 text-white/80' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300'}`}>
+                <span key={c.id} className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-black/10 text-gray-700 dark:bg-black/30 dark:text-white/80' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300'}`}>
                   1 {c.currency_code} =&nbsp;
                   {editingRateId === c.id ? (
                     <>
@@ -480,7 +480,7 @@ export default function SessionPage() {
                         className="text-blue-400 hover:text-blue-300 font-medium disabled:opacity-50">
                         {savingRate ? '…' : 'Save'}
                       </button>
-                      <button onClick={() => setEditingRateId(null)} className="text-white/60 hover:text-white">✕</button>
+                      <button onClick={() => setEditingRateId(null)} className="text-gray-500 hover:text-gray-800 dark:text-white/60 dark:hover:text-white">✕</button>
                     </>
                   ) : (
                     <>
@@ -490,7 +490,7 @@ export default function SessionPage() {
                           if (confirmedSettlements.length > 0) { setShowPaidWarning(true); return }
                           setEditingRateId(c.id); setRateInput(c.rate_to_sgd.toString())
                         }}
-                          className={`ml-1 ${headerImage ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-blue-500'}`} title="Edit rate">
+                          className={`ml-1 ${headerImage ? 'text-gray-400 hover:text-gray-700 dark:text-white/50 dark:hover:text-white' : 'text-gray-400 hover:text-blue-500'}`} title="Edit rate">
                           <Pencil size={10} />
                         </button>
                       )}
@@ -501,7 +501,7 @@ export default function SessionPage() {
             </div>
           )}
 
-          {user && <p className={`text-xs mt-1 ${headerImage ? 'text-green-300' : 'text-green-600'}`}>Editing as {user.email}</p>}
+          {user && <p className={`text-xs mt-1 ${headerImage ? 'text-green-700 dark:text-green-300' : 'text-green-600'}`}>Editing as {user.email}</p>}
         </div>
       </header>
       </div>
