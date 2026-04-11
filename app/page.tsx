@@ -251,6 +251,8 @@ export default function Home() {
           onCreated={id => { setShowModal(false); router.push(`/session/${id}`) }}
         />
       )}
+
+      <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600">v1.0.0</footer>
     </main>
   )
 }
