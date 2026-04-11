@@ -188,7 +188,7 @@ export default function Home() {
           </h1>
 
           <p className="text-gray-500 dark:text-gray-400 text-[15px] max-w-xs mx-auto mb-8 leading-relaxed">
-            Track shared costs with anyone — trips, dinners, housemates. Settle up in seconds.
+            Built for Singaporeans. Track shared costs with anyone — trips, dinners, housemates. SGD by default, settle up in seconds.
           </p>
 
           <button
@@ -285,7 +285,7 @@ export default function Home() {
               </h2>
             </div>
             <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-gray-400 dark:text-gray-500 lg:text-right shrink-0 pb-1">
-              {['Free forever', 'No account needed', '150+ currencies', 'PWA-ready'].map(s => (
+              {['Free forever', 'No account needed', 'SGD default', '150+ currencies', 'PWA-ready'].map(s => (
                 <span key={s} className="flex items-center gap-1">
                   <span className="text-blue-400 dark:text-blue-500">✓</span> {s}
                 </span>
@@ -312,7 +312,7 @@ export default function Home() {
                 icon: Globe,
                 color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10',
                 title: 'Multi-Currency',
-                desc: 'Add expenses in any currency. Live exchange rates keep everything balanced in a single base currency.',
+                desc: 'Built with SGD as the base currency for Singapore. Add expenses in any other currency — live exchange rates handle the rest.',
               },
               {
                 icon: ScrollText,
