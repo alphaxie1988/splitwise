@@ -16,6 +16,7 @@ import ShareModal from '@/components/ShareModal'
 import SessionSkeleton from '@/components/SessionSkeleton'
 import UndoToast from '@/components/UndoToast'
 import ThemeToggle from '@/components/ThemeToggle'
+import { detectCity, fetchCityImage } from '@/lib/city-images'
 
 export default function SessionPage() {
   const { id } = useParams<{ id: string }>()
@@ -51,6 +52,9 @@ export default function SessionPage() {
 
   // Undo delete state
   const [pendingDelete, setPendingDelete] = useState<{ expense: Expense; index: number } | null>(null)
+
+  // City wallpaper
+  const [headerImage, setHeaderImage] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -102,6 +106,19 @@ export default function SessionPage() {
     })
     return () => subscription.unsubscribe()
   }, [fetchData]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const name = data?.session.name
+    if (!name) return
+    const city = detectCity(name)
+    if (!city) { setHeaderImage(null); return }
+    const cacheKey = `city-img-${city.toLowerCase()}`
+    const cached = sessionStorage.getItem(cacheKey)
+    if (cached) { setHeaderImage(cached); return }
+    fetchCityImage(city).then(url => {
+      if (url) { sessionStorage.setItem(cacheKey, url); setHeaderImage(url) }
+    })
+  }, [data?.session.name])
 
   const handleSignIn = async () => {
     setAuthLoading(true)
@@ -344,29 +361,41 @@ export default function SessionPage() {
       )}
 
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+      <header
+        className="relative border-b dark:border-gray-700 transition-all duration-500"
+        style={headerImage ? {
+          backgroundImage: `url(${headerImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : undefined}
+      >
+        {/* Dark overlay when city photo is active */}
+        {headerImage && (
+          <div className="absolute inset-0 bg-black/55 pointer-events-none" />
+        )}
+
+        <div className={`relative z-10 max-w-2xl mx-auto px-4 py-4 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}>
           {/* Row 1: back + buttons */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <button onClick={() => router.push('/')}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+              className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}>
               <ArrowLeft size={12} /> Home
             </button>
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <button onClick={() => setShowShare(true)}
-                className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-white border-white/40 hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 <Share2 size={12} />
                 <span className="hidden sm:inline">Share</span>
               </button>
               <button onClick={handleExportCSV} disabled={expenses.length === 0}
-                className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-40"
+                className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border disabled:opacity-40 ${headerImage ? 'text-white border-white/40 hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 title="Export to CSV">
                 <Download size={12} />
               </button>
               {user ? (
                 <button onClick={() => supabase.auth.signOut()}
-                  className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-white border-white/40 hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                   title={user.email ?? ''}>
                   <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
                 </button>
@@ -385,19 +414,19 @@ export default function SessionPage() {
             <div className="flex items-center gap-2">
               <input autoFocus value={nameInput} onChange={e => setNameInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
-                className="text-xl font-bold border-b-2 border-blue-500 bg-transparent dark:text-gray-100 focus:outline-none flex-1 min-w-0" />
+                className="text-xl font-bold border-b-2 border-blue-400 bg-transparent text-white focus:outline-none flex-1 min-w-0" />
               <button onClick={handleSaveName} disabled={savingName}
-                className="text-xs text-blue-600 font-medium disabled:opacity-50 shrink-0">
+                className="text-xs text-blue-300 font-medium disabled:opacity-50 shrink-0">
                 {savingName ? '…' : 'Save'}
               </button>
-              <button onClick={() => setEditingName(false)} className="text-xs text-gray-400 shrink-0">Cancel</button>
+              <button onClick={() => setEditingName(false)} className={`text-xs shrink-0 ${headerImage ? 'text-white/60' : 'text-gray-400'}`}>Cancel</button>
             </div>
           ) : (
             <div className="flex items-center gap-1.5">
-              <h1 className="text-xl font-bold dark:text-gray-100">{session.name}</h1>
+              <h1 className={`text-xl font-bold ${headerImage ? 'text-white drop-shadow' : 'dark:text-gray-100'}`}>{session.name}</h1>
               {user && (
                 <button onClick={() => { setNameInput(session.name); setEditingName(true) }}
-                  className="text-gray-400 hover:text-blue-500 shrink-0">
+                  className={`shrink-0 ${headerImage ? 'text-white/60 hover:text-white' : 'text-gray-400 hover:text-blue-500'}`}>
                   <Pencil size={13} />
                 </button>
               )}
@@ -412,7 +441,9 @@ export default function SessionPage() {
                 className={`text-xs px-2.5 py-0.5 rounded-full border transition ${
                   !filterMemberId
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                    : headerImage
+                      ? 'border-white/40 text-white/80 hover:border-white/70'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}>
                 All
               </button>
@@ -423,7 +454,9 @@ export default function SessionPage() {
                 className={`text-xs px-2.5 py-0.5 rounded-full border transition ${
                   filterMemberId === m.id
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                    : headerImage
+                      ? 'border-white/40 text-white/80 hover:border-white/70'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}>
                 {m.name}
               </button>
@@ -434,7 +467,7 @@ export default function SessionPage() {
           {currencies.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {currencies.map(c => (
-                <span key={c.id} className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 px-2 py-0.5 rounded">
+                <span key={c.id} className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-black/30 text-white/80' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300'}`}>
                   1 {c.currency_code} =&nbsp;
                   {editingRateId === c.id ? (
                     <>
@@ -443,10 +476,10 @@ export default function SessionPage() {
                         className="w-16 border dark:border-gray-600 rounded px-1 py-0 text-xs bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-400"
                         onKeyDown={e => { if (e.key === 'Enter') handleSaveRate(c.id); if (e.key === 'Escape') setEditingRateId(null) }} />
                       <button onClick={() => handleSaveRate(c.id)} disabled={savingRate}
-                        className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50">
+                        className="text-blue-400 hover:text-blue-300 font-medium disabled:opacity-50">
                         {savingRate ? '…' : 'Save'}
                       </button>
-                      <button onClick={() => setEditingRateId(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+                      <button onClick={() => setEditingRateId(null)} className="text-white/60 hover:text-white">✕</button>
                     </>
                   ) : (
                     <>
@@ -456,7 +489,7 @@ export default function SessionPage() {
                           if (confirmedSettlements.length > 0) { setShowPaidWarning(true); return }
                           setEditingRateId(c.id); setRateInput(c.rate_to_sgd.toString())
                         }}
-                          className="ml-1 text-gray-400 hover:text-blue-500" title="Edit rate">
+                          className={`ml-1 ${headerImage ? 'text-white/50 hover:text-white' : 'text-gray-400 hover:text-blue-500'}`} title="Edit rate">
                           <Pencil size={10} />
                         </button>
                       )}
@@ -467,7 +500,7 @@ export default function SessionPage() {
             </div>
           )}
 
-          {user && <p className="text-xs text-green-600 mt-1">Editing as {user.email}</p>}
+          {user && <p className={`text-xs mt-1 ${headerImage ? 'text-green-300' : 'text-green-600'}`}>Editing as {user.email}</p>}
         </div>
       </header>
       </div>
