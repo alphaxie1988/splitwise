@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react'
+import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ChevronUp, ShieldCheck, Zap, Globe, Calculator, ScrollText, Share2, Smartphone } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import CreateSessionModal from '@/components/CreateSessionModal'
@@ -252,7 +252,71 @@ export default function Home() {
         />
       )}
 
-      <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600">v1.0.0</footer>
+      {/* Features Section */}
+      <section className="border-t border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/40 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 dark:text-blue-400 mb-3">Why Splitwise</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Split smarter, not harder</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
+              A lightweight, no-fuss tool to track shared expenses with friends, family, or colleagues — no account required.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                icon: Zap,
+                color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10',
+                title: 'Instant Setup',
+                desc: 'No sign-up required. Create a session in seconds and share the link — anyone can join immediately.',
+              },
+              {
+                icon: Calculator,
+                color: 'text-blue-500 bg-blue-50 dark:bg-blue-500/10',
+                title: 'Smart Settlements',
+                desc: 'Our algorithm calculates the minimum number of payments needed to settle all debts fairly.',
+              },
+              {
+                icon: Globe,
+                color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10',
+                title: 'Multi-Currency',
+                desc: 'Add expenses in any currency. Live exchange rates keep everything balanced in a single base currency.',
+              },
+              {
+                icon: ScrollText,
+                color: 'text-purple-500 bg-purple-50 dark:bg-purple-500/10',
+                title: 'Full Audit Log',
+                desc: 'Every change is recorded. See exactly who added, edited, or deleted anything and when.',
+              },
+              {
+                icon: Share2,
+                color: 'text-rose-500 bg-rose-50 dark:bg-rose-500/10',
+                title: 'Share Anywhere',
+                desc: 'Share your session via link, WhatsApp, Telegram, or QR code — no installs needed on either end.',
+              },
+              {
+                icon: Smartphone,
+                color: 'text-teal-500 bg-teal-50 dark:bg-teal-500/10',
+                title: 'Works on Any Device',
+                desc: 'Install as a PWA for quick home-screen access. Fast, responsive, and feels native on mobile.',
+              },
+            ].map(({ icon: Icon, color, title, desc }) => (
+              <div key={title} className="flex gap-4 p-5 rounded-xl border border-gray-100 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 hover:border-gray-200 dark:hover:border-gray-600 transition-colors">
+                <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${color}`}>
+                  <Icon size={16} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">{title}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600 bg-white dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-700/60">v1.0.0</footer>
     </main>
   )
 }
