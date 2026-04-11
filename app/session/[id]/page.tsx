@@ -6,7 +6,7 @@ import { Plus, Calculator, LogIn, LogOut, Pencil, Trash2, ArrowLeft, CheckCircle
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import type { Expense, SessionData } from '@/lib/types'
-import { CATEGORIES } from '@/lib/types'
+import { CATEGORIES, formatAmount } from '@/lib/types'
 import { calculateSettlement } from '@/lib/settlement'
 import ExpenseModal from '@/components/ExpenseModal'
 import SettlementModal from '@/components/SettlementModal'
@@ -372,7 +372,7 @@ export default function SessionPage() {
       >
         {/* Overlay when city photo is active — white-wash in light mode, dark in dark mode */}
         {headerImage && (
-          <div className="absolute inset-0 bg-white/70 dark:bg-black/55 pointer-events-none" />
+          <div className="absolute inset-0 bg-white/70 dark:bg-black/70 pointer-events-none" />
         )}
 
         <div className={`relative z-10 max-w-2xl mx-auto px-4 py-4 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}>
@@ -621,7 +621,7 @@ export default function SessionPage() {
                                 <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{expense.description}</p>
                                 <div className="flex items-baseline gap-2 mt-0.5">
                                   <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                    {expense.amount.toFixed(2)} {expense.currency_code}
+                                    {formatAmount(expense.amount, expense.currency_code)} {expense.currency_code}
                                   </span>
                                   {expense.currency_code !== 'SGD' && (
                                     <span className="text-xs text-gray-400 dark:text-gray-500">≈ {amountSGD.toFixed(2)} SGD</span>

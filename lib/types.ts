@@ -1,3 +1,16 @@
+/** Currencies that have no minor units (no decimal places). */
+const ZERO_DECIMAL_CURRENCIES = new Set([
+  'JPY', 'IDR', 'KRW', 'VND', 'BIF', 'CLP', 'GNF', 'ISK',
+  'KMF', 'PYG', 'RWF', 'UGX', 'XAF', 'XOF', 'XPF',
+])
+
+/** Format a currency amount, omitting decimals for zero-decimal currencies. */
+export function formatAmount(amount: number, currencyCode: string): string {
+  return ZERO_DECIMAL_CURRENCIES.has(currencyCode)
+    ? Math.round(amount).toLocaleString()
+    : amount.toFixed(2)
+}
+
 export const CATEGORIES = [
   { id: 'meal',          label: 'Meal',          emoji: '🍽️' },
   { id: 'drink',         label: 'Drink',         emoji: '🍹' },
