@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ChevronUp, ShieldCheck, Zap, Globe, Calculator, ScrollText, Share2, Smartphone } from 'lucide-react'
+import { Plus, Clock, Users, ArrowRight, LogIn, LogOut, Archive, ArchiveRestore, ChevronDown, ShieldCheck, Zap, Globe, Calculator, ScrollText, Share2, Smartphone } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import CreateSessionModal from '@/components/CreateSessionModal'
@@ -234,13 +234,15 @@ export default function Home() {
               className="w-full flex items-center justify-between text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3 hover:text-gray-500 dark:hover:text-gray-400 transition"
             >
               <span className="flex items-center gap-1.5"><Archive size={12} /> Archived ({archivedSessions.length})</span>
-              {showArchived ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              <ChevronDown size={13} className={`transition-transform duration-300 ${showArchived ? 'rotate-180' : ''}`} />
             </button>
-            {showArchived && (
-              <div className="space-y-2">
-                {archivedSessions.map(s => <SessionCard key={s.id} s={s} />)}
+            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${showArchived ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+              <div className="overflow-hidden">
+                <div className="space-y-2 pb-1">
+                  {archivedSessions.map(s => <SessionCard key={s.id} s={s} />)}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
