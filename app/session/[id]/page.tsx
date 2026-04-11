@@ -107,18 +107,19 @@ export default function SessionPage() {
     return () => subscription.unsubscribe()
   }, [fetchData]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const effectiveName = editingName ? nameInput : (data?.session.name ?? '')
+
   useEffect(() => {
-    const name = data?.session.name
-    if (!name) return
-    const city = detectCity(name)
+    if (!effectiveName) return
+    const city = detectCity(effectiveName)
     if (!city) { setHeaderImage(null); return }
     const cacheKey = `city-img-${city.toLowerCase()}`
     const cached = sessionStorage.getItem(cacheKey)
     if (cached) { setHeaderImage(cached); return }
     fetchCityImage(city).then(url => {
-      if (url) { sessionStorage.setItem(cacheKey, url); setHeaderImage(url) }
+      setHeaderImage(url)
     })
-  }, [data?.session.name])
+  }, [effectiveName])
 
   const handleSignIn = async () => {
     setAuthLoading(true)
