@@ -374,11 +374,6 @@ export default function Home() {
             <span className="text-sm font-semibold text-white">Splitwise</span>
             <span className="text-[10px] text-gray-600 border border-gray-800 rounded px-1.5 py-0.5 ml-1">v1.0.1</span>
           </div>
-          <div className="flex items-center gap-1.5 flex-wrap justify-center">
-            {['Next.js', 'Supabase', 'Tailwind CSS', 'Frankfurter API'].map(t => (
-              <span key={t} className="text-[11px] text-gray-500 bg-gray-900 border border-gray-800 rounded-md px-2 py-0.5">{t}</span>
-            ))}
-          </div>
           <p className="text-xs text-gray-600">Split expenses, not friendships.</p>
         </div>
       </footer>
