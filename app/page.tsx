@@ -372,7 +372,7 @@ export default function Home() {
           <div className="flex items-center gap-2.5">
             <img src="/icon.svg" alt="" className="w-5 h-5 rounded-md" />
             <span className="text-sm font-semibold text-white">Splitwise</span>
-            <span className="text-[10px] text-gray-600 border border-gray-800 rounded px-1.5 py-0.5 ml-1">v1.0.2</span>
+            <span className="text-[10px] text-gray-600 border border-gray-800 rounded px-1.5 py-0.5 ml-1">v1.0.3</span>
           </div>
           <p className="text-xs text-gray-600">Split expenses, not friendships.</p>
         </div>

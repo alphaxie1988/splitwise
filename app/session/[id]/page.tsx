@@ -377,8 +377,9 @@ export default function SessionPage() {
           {/* Row 1: back + buttons */}
           <div className="flex items-start justify-between gap-2 mb-1">
             <button onClick={() => router.push('/')}
-              className={`flex items-center gap-1 text-xs transition ${headerImage ? 'text-gray-600 hover:text-gray-900 dark:text-white/80 dark:hover:text-white' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'}`}>
-              <ArrowLeft size={12} /> Home
+              className="flex items-center gap-2 transition opacity-90 hover:opacity-100">
+              <img src="/icon.svg" alt="Splitwise" className="w-7 h-7 rounded-lg" />
+              <span className={`font-bold text-base tracking-tight ${headerImage ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>Splitwise</span>
             </button>
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-2">
@@ -521,13 +522,13 @@ export default function SessionPage() {
           <div className="flex gap-2">
             {user && (session.is_settled || (allSettlementsConfirmed && expenses.length > 0)) && (
               <button onClick={handleToggleSettle} disabled={settlingSession}
-                className={`flex items-center gap-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 transition disabled:opacity-50 ${session.is_settled ? 'border-green-400 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}>
+                className={`flex items-center gap-1 text-sm border dark:border-gray-600 rounded-lg px-3 py-1.5 transition disabled:opacity-50 ${session.is_settled ? 'border-green-400 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800' : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 {session.is_settled ? <><RotateCcw size={13} /> Reopen</> : <><CheckCircle size={13} /> Mark Settled</>}
               </button>
             )}
             {expenses.length > 0 && (
               <button onClick={() => setShowSettlement(true)}
-                className="flex items-center gap-1 text-sm border dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-1.5 hover:bg-white dark:hover:bg-gray-700 transition">
+                className="flex items-center gap-1 text-sm border dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <Calculator size={14} /> Summary
               </button>
             )}
