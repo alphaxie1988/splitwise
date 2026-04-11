@@ -444,7 +444,7 @@ export default function SessionPage() {
                     ? 'bg-blue-600 text-white border-blue-600'
                     : headerImage
                       ? 'border-gray-400/60 text-gray-700 hover:border-gray-600 dark:border-white/40 dark:text-white/80 dark:hover:border-white/70'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                      : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 hover:border-gray-500 dark:hover:border-gray-500'
                 }`}>
                 All
               </button>
@@ -457,7 +457,7 @@ export default function SessionPage() {
                     ? 'bg-blue-600 text-white border-blue-600'
                     : headerImage
                       ? 'border-gray-400/60 text-gray-700 hover:border-gray-600 dark:border-white/40 dark:text-white/80 dark:hover:border-white/70'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
+                      : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 hover:border-gray-500 dark:hover:border-gray-500'
                 }`}>
                 {m.name}
               </button>
