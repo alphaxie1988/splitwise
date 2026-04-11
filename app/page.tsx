@@ -216,7 +216,7 @@ export default function Home() {
       <div className="max-w-md mx-auto px-4 pb-16">
         <InstallPWA />
 
-        <div className="bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/60 overflow-hidden">
+        <div className="mt-4 bg-white dark:bg-gray-800/80 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/60 overflow-hidden">
 
           {/* Recent sessions header */}
           <div className="flex items-center gap-1.5 px-4 pt-4 pb-2.5 border-b border-gray-100 dark:border-gray-700/50">
