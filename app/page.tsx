@@ -273,17 +273,28 @@ export default function Home() {
       )}
 
       {/* Features Section */}
-      <section className="border-t border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/40 py-16">
+      <section className="border-t border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/40 py-20">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 dark:text-blue-400 mb-3">Why Splitwise</p>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Everything you need to split fairly</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto leading-relaxed">
-              A lightweight, no-fuss tool to track shared expenses with friends, family, or colleagues — no account required.
-            </p>
+
+          {/* Section header — editorial, left-aligned on desktop */}
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-12">
+            <div>
+              <p className="text-xs font-semibold tracking-widest uppercase text-blue-500 dark:text-blue-400 mb-3">Why Splitwise</p>
+              <h2 className={`${outfit.className} text-3xl font-extrabold text-gray-900 dark:text-white leading-tight`}>
+                Everything you need<br className="hidden sm:block" /> to split fairly.
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-gray-400 dark:text-gray-500 lg:text-right shrink-0 pb-1">
+              {['Free forever', 'No account needed', '150+ currencies', 'PWA-ready'].map(s => (
+                <span key={s} className="flex items-center gap-1">
+                  <span className="text-blue-400 dark:text-blue-500">✓</span> {s}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Feature cards — stacked, taller */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
                 icon: Zap,
@@ -322,21 +333,55 @@ export default function Home() {
                 desc: 'Install as a PWA for quick home-screen access. Fast, responsive, and feels native on mobile.',
               },
             ].map(({ icon: Icon, color, title, desc }) => (
-              <div key={title} className="flex gap-4 p-5 rounded-xl border border-gray-100 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 hover:border-gray-200 dark:hover:border-gray-600 transition-colors">
-                <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${color}`}>
-                  <Icon size={16} />
+              <div key={title} className="p-6 rounded-2xl border border-gray-100 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-800/90 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-sm transition-all">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-5 ${color}`}>
+                  <Icon size={20} />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">{title}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
-                </div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">{title}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-600 bg-white dark:bg-gray-800/40 border-t border-gray-200 dark:border-gray-700/60">v1.0.0</footer>
+      {/* CTA closing section */}
+      <section className="relative bg-gray-900 dark:bg-[#0a0a0a] py-20 px-6 text-center overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[560px] h-[320px] bg-blue-600/10 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-md mx-auto">
+          <h2 className={`${outfit.className} text-4xl sm:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-4`}>
+            Start splitting<br />in seconds.
+          </h2>
+          <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+            No sign-up. No app install. Create a session and share the link — your group is ready instantly.
+          </p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-400 active:scale-[0.98] text-white text-sm font-semibold rounded-xl px-6 py-3 transition-all shadow-lg shadow-blue-500/25">
+            <Plus size={16} strokeWidth={2.5} />
+            Create a free session
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-950 dark:bg-[#0a0a0a] border-t border-gray-800 py-7 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="flex items-center gap-2.5">
+            <img src="/icon.svg" alt="" className="w-5 h-5 rounded-md" />
+            <span className="text-sm font-semibold text-white">Splitwise</span>
+            <span className="text-[10px] text-gray-600 border border-gray-800 rounded px-1.5 py-0.5 ml-1">v1.0.0</span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            {['Next.js', 'Supabase', 'Tailwind CSS', 'Frankfurter API'].map(t => (
+              <span key={t} className="text-[11px] text-gray-500 bg-gray-900 border border-gray-800 rounded-md px-2 py-0.5">{t}</span>
+            ))}
+          </div>
+          <p className="text-xs text-gray-600">Split expenses, not friendships.</p>
+        </div>
+      </footer>
     </div>
   )
 }
