@@ -396,7 +396,7 @@ export default function SessionPage() {
               </button>
               {user ? (
                 <button onClick={() => supabase.auth.signOut()}
-                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 bg-black/10 hover:bg-black/20 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`
+                  className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 bg-black/10 hover:bg-black/20 dark:text-white dark:border-white/40 dark:bg-white/10 dark:hover:bg-white/20' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/50 dark:hover:bg-gray-700'}`}
                   title={user.email ?? ''}>
                   <LogOut size={12} /> <span className="hidden sm:inline">Sign Out</span>
                 </button>
