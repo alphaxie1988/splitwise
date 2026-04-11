@@ -350,7 +350,7 @@ export default function SessionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen dot-grid-bg bg-gray-50 dark:bg-[#111111]">
       {/* Sticky top: settled banner + header */}
       <div className="sticky top-0 z-10">
       {session.is_settled && (
