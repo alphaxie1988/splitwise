@@ -383,7 +383,7 @@ export default function SessionPage() {
               <ArrowLeft size={12} /> Home
             </button>
             <div className="flex items-center gap-2">
-              <ThemeToggle />
+              <ThemeToggle className={headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'} />
               <button onClick={() => setShowShare(true)}
                 className={`flex items-center gap-1 text-xs rounded-lg px-2.5 py-1.5 transition border ${headerImage ? 'text-gray-700 border-gray-400/60 hover:bg-black/5 dark:text-white dark:border-white/40 dark:hover:bg-white/10' : 'text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 <Share2 size={12} />

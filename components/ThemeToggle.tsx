@@ -21,7 +21,7 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
     <button
       onClick={toggle}
       title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className={`flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition ${className}`}
+      className={`flex items-center justify-center px-2.5 py-1.5 rounded-lg border transition ${className}`}
     >
       {dark ? <Sun size={14} /> : <Moon size={14} />}
     </button>

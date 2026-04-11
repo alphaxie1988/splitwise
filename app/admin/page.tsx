@@ -128,7 +128,7 @@ export default function AdminPage() {
               <p className="text-xs text-gray-400 dark:text-gray-500">{user?.email}</p>
             </div>
           </div>
-          <ThemeToggle />
+          <ThemeToggle className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" />
         </div>
 
         {/* Stats */}

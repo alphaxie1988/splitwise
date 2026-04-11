@@ -156,7 +156,7 @@ export default function Home() {
           </div>
           <div className="pt-1 flex flex-col items-end gap-2">
             <div className="flex items-center gap-2">
-              <ThemeToggle />
+              <ThemeToggle className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700" />
               {user ? (
                 <button onClick={handleSignOut}
                   className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 border dark:border-gray-600 rounded-lg px-2.5 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
