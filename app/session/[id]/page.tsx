@@ -468,7 +468,7 @@ export default function SessionPage() {
           {currencies.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {currencies.map(c => (
-                <span key={c.id} className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-black/10 text-gray-700 dark:bg-black/30 dark:text-white/80' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300'}`}>
+                <span key={c.id} className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-white/50 text-gray-700 dark:bg-black/30 dark:text-white/80' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300'}`}>
                   1 {c.currency_code} =&nbsp;
                   {editingRateId === c.id ? (
                     <>
@@ -503,7 +503,7 @@ export default function SessionPage() {
 
           {user && (
             <div className="flex justify-end mt-1">
-              <span className={`text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-black/10 text-gray-600 dark:bg-black/30 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
+              <span className={`text-xs px-2 py-0.5 rounded ${headerImage ? 'bg-white/50 text-gray-600 dark:bg-black/30 dark:text-gray-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                 Editing as {user.email}
               </span>
             </div>
