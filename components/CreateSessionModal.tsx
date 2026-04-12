@@ -219,7 +219,7 @@ export default function CreateSessionModal({ onClose, onCreated }: Props) {
                       <span className="text-gray-300 dark:text-gray-600 text-xs shrink-0">=</span>
                       <input type="number" value={c.rate} onChange={e => updateCurrency(i, { rate: e.target.value })}
                         placeholder="1.35" step="any" min="0.000001"
-                        className="flex-1 border border-gray-200 dark:border-gray-600/80 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                        className="flex-1 min-w-0 border border-gray-200 dark:border-gray-600/80 rounded-xl px-3 py-2 text-sm bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
                       <span className="text-gray-400 dark:text-gray-500 text-xs shrink-0">SGD</span>
                       <button type="button" onClick={() => fetchLiveRate(i)}
                         disabled={fetchingRate === i || !c.code.trim()}
