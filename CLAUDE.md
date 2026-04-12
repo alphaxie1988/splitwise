@@ -84,5 +84,14 @@ Vercel. UptimeRobot pings every 12 hours to keep the free-tier warm.
 - `beforeinstallprompt` captured early in layout to avoid missing the browser event
 - PWA install banner added with spacing above Recent Sessions panel
 - Android manual install guide added as fallback when native prompt is unavailable
-- Header wallpaper animation replaced with a simple fade-in
+- Header wallpaper animation (fade-in) removed — overlay appears instantly, no flash
+- Header `<header>` element now carries `bg-white dark:bg-gray-800` directly when no wallpaper is loaded
 - Homepage messaging updated to clarify account requirements
+- PWA splash screen added (`components/SplashScreen.tsx`) — shown once per session via `sessionStorage`, green radial gradient background, progress bar, fades out after 1.4s. Starts `visible=true` to avoid flash of app content before splash appears
+- Admin page now shows a green "Settled" badge on settled sessions and lists editor emails (from `audit_logs.changed_by_email`) as tags under each session row
+- Admin API (`/api/admin/sessions`) updated to include `is_settled` and deduplicated `editors` array from `audit_logs`
+
+## Preferences / Conventions
+
+- No animations on entry — only exit fades where needed
+- Keep `CLAUDE.md` updated after each session
