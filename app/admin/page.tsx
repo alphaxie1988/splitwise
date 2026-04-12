@@ -79,10 +79,14 @@ export default function AdminPage() {
     })
   }
 
-  const filtered = sessions.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.id.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = sessions.filter(s => {
+    const q = search.toLowerCase()
+    return (
+      s.name.toLowerCase().includes(q) ||
+      s.id.toLowerCase().includes(q) ||
+      s.editors.some(e => e.toLowerCase().includes(q))
+    )
+  })
 
   if (loading) {
     return (
@@ -162,7 +166,7 @@ export default function AdminPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name or ID…"
+            placeholder="Search by name, ID or email…"
             className="w-full pl-9 pr-4 py-2.5 text-sm bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/60 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
           />
         </div>
