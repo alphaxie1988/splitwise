@@ -13,7 +13,9 @@ interface AdminSession {
   id: string
   name: string
   created_at: string
+  is_settled: boolean
   member_count: number
+  editors: string[]
 }
 
 export default function AdminPage() {
@@ -176,7 +178,14 @@ export default function AdminPage() {
                   idx > 0 ? 'border-t border-gray-100 dark:border-gray-700/40' : ''
                 }`}>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{s.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{s.name}</p>
+                    {s.is_settled && (
+                      <span className="shrink-0 text-[10px] font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-full px-2 py-0.5">
+                        Settled
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                     <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono truncate max-w-[200px]">{s.id}</p>
                     <span className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1 shrink-0">
@@ -184,6 +193,15 @@ export default function AdminPage() {
                     </span>
                     <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0">{formatDate(s.created_at)}</span>
                   </div>
+                  {s.editors.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {s.editors.map(email => (
+                        <span key={email} className="text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/60 rounded px-1.5 py-0.5">
+                          {email}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">

@@ -15,7 +15,7 @@ export async function GET() {
 
   const { data: sessions, error } = await db
     .from('sessions')
-    .select('id, name, created_at, session_members(count)')
+    .select('id, name, created_at, is_settled, session_members(count), audit_logs(changed_by_email)')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -24,7 +24,13 @@ export async function GET() {
     id: s.id,
     name: s.name,
     created_at: s.created_at,
+    is_settled: s.is_settled,
     member_count: (s.session_members as unknown as { count: number }[])[0]?.count ?? 0,
+    editors: Array.from(new Set(
+      (s.audit_logs as { changed_by_email: string | null }[])
+        .map(a => a.changed_by_email)
+        .filter((e): e is string => !!e)
+    )),
   }))
 
   return NextResponse.json({ sessions: result })
