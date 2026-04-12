@@ -362,7 +362,7 @@ export default function SessionPage() {
 
       {/* Header */}
       <header
-        className="relative border-b dark:border-gray-700"
+        className={`relative border-b dark:border-gray-700 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}
         style={headerImage ? {
           backgroundImage: `url(${headerImage})`,
           backgroundSize: 'cover',
@@ -374,7 +374,7 @@ export default function SessionPage() {
           <div className="absolute inset-0 bg-white/70 dark:bg-black/70 pointer-events-none" />
         )}
 
-        <div className={`relative z-10 max-w-2xl mx-auto px-4 py-4 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}>
+        <div className="relative z-10 max-w-2xl mx-auto px-4 py-4">
           {/* Row 1: back + buttons */}
           <div className="flex items-start justify-between gap-2 mb-1">
             <button onClick={() => router.push('/')}
