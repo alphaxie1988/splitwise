@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import SplashScreen from '@/components/SplashScreen'
 
 export const metadata: Metadata = {
   title: 'Splitwise — Split expenses without signing up',
@@ -32,7 +33,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           });
         `}} />
       </head>
-      <body className="antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">{children}</body>
+      <body className="antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <SplashScreen />
+        {children}
+      </body>
     </html>
   )
 }
