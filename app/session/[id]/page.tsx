@@ -371,7 +371,7 @@ export default function SessionPage() {
       >
         {/* Overlay when city photo is active — white-wash in light mode, dark in dark mode */}
         {headerImage && (
-          <div className="header-bg-fadein absolute inset-0 bg-white/70 dark:bg-black/70 pointer-events-none" />
+          <div className="absolute inset-0 bg-white/70 dark:bg-black/70 pointer-events-none" />
         )}
 
         <div className={`relative z-10 max-w-2xl mx-auto px-4 py-4 ${!headerImage ? 'bg-white dark:bg-gray-800' : ''}`}>
