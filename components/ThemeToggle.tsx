@@ -12,9 +12,18 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
 
   const toggle = () => {
     const next = !dark
-    setDark(next)
-    document.documentElement.classList.toggle('dark', next)
-    localStorage.setItem('theme', next ? 'dark' : 'light')
+    const apply = () => {
+      setDark(next)
+      document.documentElement.classList.toggle('dark', next)
+      localStorage.setItem('theme', next ? 'dark' : 'light')
+    }
+    if (!document.startViewTransition) {
+      apply()
+      return
+    }
+    document.documentElement.dataset.themeTransition = ''
+    const t = document.startViewTransition(apply)
+    t.finished.finally(() => delete document.documentElement.dataset.themeTransition)
   }
 
   return (

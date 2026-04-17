@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+[data-theme-transition]::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+[data-theme-transition]::view-transition-new(root) {
+  animation: theme-wipe 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+  mix-blend-mode: normal;
+}
+
+@keyframes theme-wipe {
+  from { clip-path: polygon(0 0, 0 0, 0 0); }
+  to   { clip-path: polygon(0 0, 200% 0, 0 200%); }
+}
+
 @layer base {
   :root { color-scheme: light; }
   .dark { color-scheme: dark; }
