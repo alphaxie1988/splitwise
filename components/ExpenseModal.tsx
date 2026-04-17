@@ -53,6 +53,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
   const [expenseDate, setExpenseDate] = useState(
     expense?.expense_date ?? new Date().toISOString().split('T')[0]
   )
+  const [userTypedDescription, setUserTypedDescription] = useState(!!expense)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -68,7 +69,10 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
     if (id === 'transfer') {
       const other = members.find(m => m.id !== paidBy)
       setTransferTo(other?.id ?? '')
-      if (!description.trim()) setDescription('Transfer')
+    }
+    if (!userTypedDescription) {
+      const label = CATEGORIES.find(c => c.id === id)?.label ?? ''
+      setDescription(label)
     }
   }
 
@@ -166,7 +170,7 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
           {/* Description */}
           <div>
             <label className={LABEL}>Description</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+            <input type="text" value={description} onChange={e => { setDescription(e.target.value); setUserTypedDescription(true) }}
               placeholder="e.g. Dinner at Maxwell" className={INPUT} />
           </div>
 
