@@ -352,13 +352,16 @@ export default function SessionPage() {
 
   return (
     <div className="min-h-screen dot-grid-bg bg-gray-50 dark:bg-[#111111]">
-      {/* Sticky top: settled banner + header */}
-      <div className="sticky top-0 z-10">
+      {/* Settled banner — fixed above all modals */}
       {session.is_settled && (
-        <div className="bg-green-600 text-white text-center text-sm py-2 flex items-center justify-center gap-2">
+        <div className="fixed top-0 left-0 right-0 bg-green-600 text-white text-center text-sm py-2 flex items-center justify-center gap-2 z-[60]">
           <CheckCircle size={15} /> This session is marked as settled
         </div>
       )}
+      {/* Spacer so page content isn't hidden under the fixed banner */}
+      {session.is_settled && <div className="h-9" />}
+      {/* Sticky header — offset below the fixed banner when settled */}
+      <div className={`sticky z-10 ${session.is_settled ? 'top-9' : 'top-0'}`}>
 
       {/* Header */}
       <header
