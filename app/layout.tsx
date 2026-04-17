@@ -20,8 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: `
           try {
             const t = localStorage.getItem('theme');
-            if (t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
               document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
             }
           } catch(e) {}
           if ('serviceWorker' in navigator) {

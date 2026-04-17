@@ -36,7 +36,9 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
 
   useEffect(() => {
     const stored = localStorage.getItem('theme')
-    setTheme(stored === 'light' || stored === 'dark' ? stored : 'system')
+    const resolved: Theme = stored === 'light' || stored === 'dark' ? stored : 'system'
+    setTheme(resolved)
+    applyTheme(resolved)
 
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (e: MediaQueryListEvent) => {
