@@ -145,13 +145,6 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-4">
 
-          {/* Description */}
-          <div>
-            <label className={LABEL}>Description</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="e.g. Dinner at Maxwell" className={INPUT} />
-          </div>
-
           {/* Category */}
           <div>
             <label className={LABEL}>Category</label>
@@ -168,6 +161,13 @@ export default function ExpenseModal({ sessionId, members, currencies, expense, 
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className={LABEL}>Description</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+              placeholder="e.g. Dinner at Maxwell" className={INPUT} />
           </div>
 
           {/* Amount + Currency */}
