@@ -58,7 +58,7 @@ export default function SplashScreen() {
         }
         @keyframes splashTag {
           0%   { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 0.6; transform: translateY(0); }
+          100% { opacity: 0.9; transform: translateY(0); }
         }
         @keyframes ringPulse {
           0%   { transform: scale(1);   opacity: 0.55; }
@@ -170,7 +170,7 @@ export default function SplashScreen() {
 
         {/* Tagline */}
         <p className="sp-tag" style={{
-          color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 400,
+          color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 400,
           margin: 0, letterSpacing: '0.2px',
           fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif',
         }}>
