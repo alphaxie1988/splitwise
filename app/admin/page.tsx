@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Users, Search, Trash2, LogIn, Database } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Users, Search, Trash2, LogIn, Database, Lock } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -12,6 +12,7 @@ const ADMIN_EMAIL = 'alphaxie1988@gmail.com'
 interface AdminSession {
   id: string
   name: string
+  passcode: string | null
   created_at: string
   is_settled: boolean
   member_count: number
@@ -195,6 +196,11 @@ export default function AdminPage() {
                     <span className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1 shrink-0">
                       <Users size={10} /> {s.member_count}
                     </span>
+                    {s.passcode && (
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1 shrink-0 font-mono bg-gray-100 dark:bg-gray-700/60 rounded px-1.5 py-0.5">
+                        <Lock size={9} /> {s.passcode}
+                      </span>
+                    )}
                     <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0">{formatDate(s.created_at)}</span>
                   </div>
                   {s.editors.length > 0 && (
