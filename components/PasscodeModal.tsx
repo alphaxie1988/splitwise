@@ -27,7 +27,7 @@ export default function PasscodeModal({ sessionId, onUnlocked }: Props) {
       const data = await res.json()
       if (data.ok) {
         if (remember) {
-          localStorage.setItem(`unlockedSession_${sessionId}`, '1')
+          localStorage.setItem(`sessionPasscode_${sessionId}`, passcode)
         }
         onUnlocked()
       } else {

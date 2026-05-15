@@ -66,10 +66,25 @@ export default function SessionPage() {
       const json = await res.json()
       setData(json)
 
-      if (json.session.has_passcode && !localStorage.getItem(`unlockedSession_${id}`)) {
-        setLocked(true)
-        setLoading(false)
-        return
+      if (json.session.has_passcode) {
+        const storedPasscode = localStorage.getItem(`sessionPasscode_${id}`)
+        if (storedPasscode) {
+          const verifyRes = await fetch(`/api/sessions/${id}/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ passcode: storedPasscode }),
+          })
+          if (!(await verifyRes.json()).ok) {
+            localStorage.removeItem(`sessionPasscode_${id}`)
+            setLocked(true)
+            setLoading(false)
+            return
+          }
+        } else {
+          setLocked(true)
+          setLoading(false)
+          return
+        }
       }
 
       const entry = {
@@ -93,7 +108,7 @@ export default function SessionPage() {
       localStorage.setItem('recentSessions', JSON.stringify(
         stored.filter((s: { id: string }) => s.id !== id)
       ))
-      localStorage.removeItem(`unlockedSession_${id}`)
+      localStorage.removeItem(`sessionPasscode_${id}`)
     } finally {
       setLoading(false)
     }
