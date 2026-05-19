@@ -15,7 +15,7 @@ export async function GET() {
 
   const { data: sessions, error } = await db
     .from('sessions')
-    .select('id, name, passcode, created_at, is_settled, session_members(count), audit_logs(changed_by_email)')
+    .select('id, name, passcode, created_at, is_settled, session_members(count), expenses(count), audit_logs(changed_by_email)')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -27,6 +27,7 @@ export async function GET() {
     created_at: s.created_at,
     is_settled: s.is_settled,
     member_count: (s.session_members as unknown as { count: number }[])[0]?.count ?? 0,
+    expense_count: (s.expenses as unknown as { count: number }[])[0]?.count ?? 0,
     editors: Array.from(new Set(
       (s.audit_logs as { changed_by_email: string | null }[])
         .map(a => a.changed_by_email)

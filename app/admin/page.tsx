@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Users, Search, Trash2, LogIn, Database, Lock } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Users, Search, Trash2, LogIn, Database, Lock, Receipt } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase-browser'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -16,6 +16,7 @@ interface AdminSession {
   created_at: string
   is_settled: boolean
   member_count: number
+  expense_count: number
   editors: string[]
 }
 
@@ -195,6 +196,9 @@ export default function AdminPage() {
                     <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono truncate max-w-[200px]">{s.id}</p>
                     <span className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1 shrink-0">
                       <Users size={10} /> {s.member_count}
+                    </span>
+                    <span className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1 shrink-0">
+                      <Receipt size={10} /> {s.expense_count}
                     </span>
                     {s.passcode && (
                       <span className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1 shrink-0 font-mono bg-gray-100 dark:bg-gray-700/60 rounded px-1.5 py-0.5">
